@@ -129,11 +129,13 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    // 'providers' => [
-    //     // Other Service Providers
-    
-    //     App\Providers\ShopifyServiceProvider::class,
-    // ],
+        // 'providers' => [
+        //     Diglactic\Breadcrumbs\BreadcrumbsServiceProvider::class,
+        // ],
+        // 'alias' => [
+        //     'Breadcrumbs' => Diglactic\Breadcrumbs\Facades\Breadcrumbs::class,
+        // ]
+        
     
 
 ];
