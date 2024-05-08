@@ -2,7 +2,7 @@
     <div class="sidebar_menu_container">
         <div class="left-0 top-0 h-full sidebar-menu transition-transform">
             <aside
-                class="flex flex-col w-96 h-screen px-5 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700">
+                class="flex flex-col w-96  px-5 py-8 overflow-y-auto border-r h-full rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700">
                 <a href="#">
                     <img class="w-full h-max" src="{{ asset('storage/images/calif-logo.png') }}" alt="">
                 </a>

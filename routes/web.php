@@ -33,7 +33,10 @@ Route::middleware('auth')->group(function () {
     
     //Customers PAGE
     Route::get('/customers', [CustomersController::class, 'getCustomers'])->name('getCustomers'); //DISPLAY CUSTOMERS
-    Route::get('/customers/{id}', [CustomersController::class, 'openCustomersDataProfile'])->name('openCustomersDataProfile');//DISPLAY CUSTOMERS PROFILE
+    Route::get('/customers/{id}', [CustomersController::class, 'openCustomersDataProfile'])->name('openCustomersDataProfile');  //DISPLAY CUSTOMERS PROFILE
+    Route::get('/customers/{id}/consolidate', [CustomersController::class, 'customerConsolidate'])->name('customerConsolidate');    //DISPLAY CUSTOMERS CONSOLIDATE
+    Route::get('/customers/{id}/add_product', [CustomersController::class, 'customerAddProducts'])->name('customerAddProducts');  //DISPLAY CUSTOMER ADD PRODUCT
+    Route::post('/customers/{id}/add_product', [CustomersController::class, 'customerAddProductsStore'])->name('customerAddProductsStore');  //STORE CUSTOMER PRODUCT
 
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');

@@ -12,11 +12,7 @@ class ShopifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $config = array(
-            'ShopUrl' => env('SHOPIFY_SHOP_URL'),
-            'AccessToken' => env('SHOPIFY_ADMIN_ACCESS_TOKEN'),
-        );
-        ShopifySDK::config($config);
+
     }
 
     /**
@@ -24,6 +20,10 @@ class ShopifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $config = array(
+            'ShopUrl' => env('SHOPIFY_SHOP_URL', 'californila-v2.myshopify.com'),
+            'AccessToken' => env('SHOPIFY_ADMIN_ACCESS_TOKEN', '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'),
+        );
+        ShopifySDK::config($config);
     }
 }
