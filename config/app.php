@@ -129,12 +129,12 @@ return [
     |--------------------------------------------------------------------------
     */
 
-        // 'providers' => [
-        //     Diglactic\Breadcrumbs\BreadcrumbsServiceProvider::class,
-        // ],
-        // 'alias' => [
-        //     'Breadcrumbs' => Diglactic\Breadcrumbs\Facades\Breadcrumbs::class,
-        // ]
+    // 'aliases' => [ 
+
+    //     'Image' => Intervention\Image\Facades\Image::class,
+       
+    // ],
+    
         
     
 

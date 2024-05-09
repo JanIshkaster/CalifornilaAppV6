@@ -78,16 +78,6 @@
                 </div>
             </div>
             <div class="col-lg-12 col-xlg-12 col-md-12 mb-3">
-                @if (session('success'))
-                    <div class="alert alert-primary" role="alert">
-                        Successfully add the product
-                    </div>
-                @endif
-                @if (session('successedit'))
-                    <div class="alert alert-info" role="alert">
-                        Successfully edit the product
-                    </div>
-                @endif
 
                 <div class="card">
                     <div class="card-body">
@@ -100,7 +90,10 @@
                                         <th class="border-top-0">Description</th>
                                         <th class="border-top-0">Merchant</th>
                                         <th class="border-top-0">Order # </th>
+                                        <th class="border-top-0">Value </th>
+                                        <th class="border-top-0">Qty </th>
                                         <th class="border-top-0">Warehouse </th>
+                                        <th class="border-top-0">Package Type </th>
                                         <th class="border-top-0">status </th>
                                         <th class="border-top-0">Date & Time </th>
                                         <th class="border-top-0">Modify </th>
@@ -110,13 +103,13 @@
                                     @foreach ($customerAddedProductData as $product)
                                         @if ($product['status'] != 'pending_payment')
                                             <tr>
-                                                <td class="text-center">
+                                                <td class="text-center;">
                                                     @if (!empty($product['product_image']))
                                                         @php
                                                             $product_image = explode(',', $product['product_image']);
                                                         @endphp
                                                         <img src="{{ asset('storage/' . $product_image[0]) }}"
-                                                            height="70" width="70" />
+                                                            height="70" width="70" style="margin: 0 auto;" />
                                                     @else
                                                         <span style="color:red;">'Missing Image'</span>
                                                     @endif
@@ -125,17 +118,31 @@
                                                 <td>{{ substr($product['description'], 0, 100) . '...' }}</td>
                                                 <td>{{ $product['merchant'] }}</td>
                                                 <td>{{ $product['order_number'] }}</td>
+                                                <td>${{ $product['value'] }}</td>
+                                                <td>{{ $product['quantity'] }}</td>
                                                 <td>{{ $product['warehouse_status'] }}</td>
+                                                <td>{{ $product['package_type'] }}</td>
                                                 <td>{{ $product['status'] }}</td>
                                                 <td>{{ \Carbon\Carbon::parse($product['created_at'])->format('m/d/Y') }}
                                                 </td>
                                                 <td>
                                                     @if ($product['warehouse_status'] == 'PH Warehouse' && $product['status'] == 'Arrive on Warehouse')
-                                                        <i class="mdi me-2 mdi-check">Qualify to packed for shipment </i>
+                                                        <i class="mdi me-2 mdi-check text-lime-500">Qualify to packed for
+                                                            shipment </i>
                                                     @else
-                                                        <a href="{{ url('customer/' . $product['id'] . '/edit') }}"
-                                                            class="btn btn-success mx-auto mx-md-0 text-white"> Edit </a>
+                                                        <a href="{{ url('customers/' . $customerDataProfile['id'] . '/edit_product' . '/' . $product['id']) }}"
+                                                            class="btn btn-success mx-auto mx-md-0 text-white w-full"> Edit
+                                                        </a>
+                                                        <form method="POST"
+                                                            action="{{ url('customers/' . $customerDataProfile['id'] . '/delete_product' . '/' . $product['id']) }}">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-danger mx-auto mx-md-0 text-white w-full"
+                                                                onclick="confirmDelete(event)">Delete</button>
+                                                        </form>
                                                     @endif
+
                                                 </td>
                                             </tr>
                                         @endif

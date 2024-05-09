@@ -37,7 +37,7 @@
                 @endif
             
 
-                <div class="container flex flex-row max-w-full p-0 h-dvh">
+                <div class="container h-full flex flex-row max-w-full p-0 h-dvh">
 
 
 
@@ -62,6 +62,28 @@
     </div>
 
     @yield('scripts')
+
+    {{-- SWEET ALERT --}}
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script>
+        function confirmDelete(event) {
+            event.preventDefault(); // Prevent the form from submitting immediately
+
+            swal({
+                title: "Are you sure?",
+                text: "Once deleted, you will not be able to recover this product!",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    event.target.form.submit(); // If the user confirms, submit the form
+                }
+            });
+        }
+    </script>
+    
 </body>
 
 </html>

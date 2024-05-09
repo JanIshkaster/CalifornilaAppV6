@@ -59,7 +59,7 @@
 }
 .btn {
     cursor: pointer;
-    margin: 1rem 0.5rem !important;
+    margin: 1rem 0.5rem;
     display: block;
     font-weight: 400;
     text-align: center;
@@ -171,14 +171,26 @@ div#customerConsolidate .card-body {
     margin-right: calc(var(--bs-gutter-x) / -2);
     margin-left: calc(var(--bs-gutter-x) / -2);
 }
-
+.card-title small {
+    font-size: 22px;
+    margin-bottom: 20px;
+    display: block;
+}
 .col-md-12 {
     -webkit-box-flex: 0;
     -ms-flex: 0 0 100%;
     flex: 0 0 100%;
     max-width: 100%;
 }
+.sidebar_menu_container {
+    position: fixed;
+    z-index: 99;
+    height: 100%;
+}
 
+.content_container.w-full.p-5 {
+    margin-left: 385px;
+}
 .alert.alert-success,
 .alert.alert-danger {
     position: absolute;
