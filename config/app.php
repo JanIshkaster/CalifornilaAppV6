@@ -129,11 +129,13 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    // 'providers' => [
-    //     // Other Service Providers
-    
-    //     App\Providers\ShopifyServiceProvider::class,
+    // 'aliases' => [ 
+
+    //     'Image' => Intervention\Image\Facades\Image::class,
+       
     // ],
+    
+        
     
 
 ];
