@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class CustomersController extends Controller
 {
 
+    //DISPLAY ALL CUSTOMERS FROM SHOPIFY AND SAVE/UPDATE TO DATABASE
     public function getCustomers(){ 
  
         $shopify = new ShopifySDK;
@@ -43,13 +44,6 @@ class CustomersController extends Controller
             'customerDataProfile' => $customerDataProfile,
             'customerAddedProductData' => $customerAddedProductData
         ]);
-    }
-
-    // Customer consolidate
-    public function customerConsolidate($id){
-        $shopify = new ShopifySDK;
-        $customerConsolidateDataProfile = $shopify->Customer($id)->get();    
-        return view('customers.customerConsolidate', ['customerConsolidateDataProfile' => $customerConsolidateDataProfile]);
     }
 
     // Customer add product page
@@ -157,6 +151,13 @@ class CustomersController extends Controller
         return redirect()->back()->with('success', 'Product Deleted successfully');
     }
 
+
+    // Customer consolidate page
+    public function customerConsolidate($id){
+        $customer_id = $id; 
+        $customerProduct = CustomerAddedProduct::where('customer_id', $customer_id)->get(); 
+        return view('customers.customerConsolidate', ['customerProduct' => $customerProduct]);
+    }
 
     
 } 

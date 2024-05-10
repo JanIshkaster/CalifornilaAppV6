@@ -33,15 +33,14 @@ Route::middleware('auth')->group(function () {
     
     //Customers PAGE
     Route::get('/customers', [CustomersController::class, 'getCustomers'])->name('getCustomers'); //DISPLAY CUSTOMERS
-    Route::get('/customers/{id}', [CustomersController::class, 'openCustomersDataProfile'])->name('openCustomersDataProfile');  //DISPLAY CUSTOMERS PROFILE
-    Route::get('/customers/{id}/consolidate', [CustomersController::class, 'customerConsolidate'])->name('customerConsolidate');    //DISPLAY CUSTOMERS CONSOLIDATE
+    Route::get('/customers/{id}', [CustomersController::class, 'openCustomersDataProfile'])->name('openCustomersDataProfile');  //DISPLAY CUSTOMERS PROFIL
     Route::get('/customers/{id}/add_product', [CustomersController::class, 'customerAddProducts'])->name('customerAddProducts');  //DISPLAY CUSTOMER ADD PRODUCT
     Route::post('/customers/{id}/add_product', [CustomersController::class, 'customerAddProductsStore'])->name('customerAddProductsStore');  //STORE CUSTOMER PRODUCT
     Route::get('/customers/{id}/edit_product/{product_id}', [CustomersController::class, 'customerEditProduct'])->name('customerEditProduct');  //EDIT CUSTOMER PRODUCT PAGE
     Route::put('/customers/{id}/update_product/{product_id}', [CustomersController::class, 'customerUpdateProduct'])->name('customerUpdateProduct');  //UPDATE CUSTOMER PRODUCT PAGE
     Route::delete('/customers/{id}/delete_product/{product_id}', [CustomersController::class, 'customerDeleteProduct'])->name('customerDeleteProduct');  //DELETE CUSTOMER PRODUCT PAGE
-
-    
+    Route::get('/customers/{id}/consolidate', [CustomersController::class, 'customerConsolidate'])->name('customerConsolidate');    //DISPLAY CUSTOMERS CONSOLIDATE
+        
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');
 
