@@ -139,10 +139,10 @@
                         </div>
                         <div class="card-body pl-3 pr-3">
                             <div class="form-group">
-                                <input type="file" id="uploadFile" name="product_image" class="img-fluid"
-                                    multiple="">
+                                <input type="file" id="uploadFile" name="product_image" class="img-fluid" onchange="preview(event)" >
                                 <hr>
-                                <div id="image_preview"></div>
+                                <img id="image_preview"/>
+                                
                             </div>
                         </div>
                     </div>
@@ -156,6 +156,14 @@
     @parent
 
     <script>
-        // function(){}
+
+        // Add image preview 
+        function preview(event) {
+            var image_preview = document.getElementById('image_preview');
+            image_preview.src = URL.createObjectURL(event.target.files[0]);
+            console.log(image_preview.src);
+        }
+
+
     </script>
 @endsection
