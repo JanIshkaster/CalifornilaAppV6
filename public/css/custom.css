@@ -1,3 +1,22 @@
+html,
+main,
+.app-content,
+body,
+.app-wrapper {
+    height: 100%;
+}
+aside a {
+    transition: 0.5s all;
+}
+
+aside a:hover,aside a.active {
+    --tw-bg-opacity: 1;
+    background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+}
+ol.p-4.rounded.flex li {
+    font-size: 18px;
+    font-weight: 700;
+}
 .card-body.profile-card .row {
     display: flex;
     justify-content: space-evenly;
@@ -220,11 +239,11 @@ input.product_data {
     cursor: pointer;
 }
 .product_list div {
-    transition: .3s ease all; 
+    transition: 0.3s ease all;
 }
-input.product_data[type=checkbox]:checked ~ div {
+input.product_data[type="checkbox"]:checked ~ div {
     background-color: #111827;
 }
-input.product_data[type=checkbox]:checked ~ div {
-    color:#fff;
+input.product_data[type="checkbox"]:checked ~ div {
+    color: #fff;
 }

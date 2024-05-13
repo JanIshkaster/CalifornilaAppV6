@@ -157,7 +157,7 @@
                             <div class="form-group">
                                 <div class="col-sm-12 d-flex">
                                     <button class="btn btn-success mx-auto mx-md-0 text-white">
-                                        Save Product</button>
+                                        Update Product</button>
                                 </div>
                             </div>
 
