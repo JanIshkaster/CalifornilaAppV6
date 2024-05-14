@@ -7,9 +7,11 @@ use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\CalculatorController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\homeController;
+use App\Http\Controllers\formController;
 use App\Http\Controllers\createShopifyProduct;
 use Illuminate\Support\Facades\Route;
 use Diglactic\Breadcrumbs\Breadcrumbs;
+use App\Http\Middleware\Cors;
 use PHPShopify\ShopifySDK;
 
 // Route::get('/', function () {
@@ -56,6 +58,12 @@ Route::middleware('auth')->group(function () {
     //CREATE PRODUCTS IN SHOPIFY STORE
     Route::get('/create_shopify_product', [createShopifyProduct::class, 'create_shopify_product'])->name('create_shopify_product');
 
+
+
+
 });
+
+    //Handle form data from Shopify -> Customers data
+    Route::post('/customer_store_data', [formController::class, 'customer_store_data']);
 
 require __DIR__.'/auth.php';

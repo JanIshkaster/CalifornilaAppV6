@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use App\Models\customerAddress;
 use App\Models\CustomerAddedProduct;
 use PHPShopify\ShopifySDK;
 use Illuminate\Support\Facades\Storage;
@@ -13,21 +14,7 @@ class CustomersController extends Controller
 
     //DISPLAY ALL CUSTOMERS FROM SHOPIFY AND SAVE/UPDATE TO DATABASE
     public function getCustomers(){ 
- 
-        $shopify = new ShopifySDK;
-        $customers = $shopify->Customer->get();  // Get all customers   
-        foreach ($customers as $customerData) {
-            $customer = Customer::updateOrCreate(
-                ['email' => $customerData['email']],
-                [
-                    'customer_id' => $customerData['id'],
-                    'first_name' => $customerData['first_name'],
-                    'last_name' => $customerData['last_name'], 
-                    'phone' => $customerData['phone'], 
-                ]
-            );
-        }        
-    
+          
         $customers = Customer::all(); // Get all customers from the database
     
         return view('customers.customers', ['customers' => $customers]);
