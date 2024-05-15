@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>{{ config('app.name') }}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('storage/images/calif-logo.png') }}">
     <script src="https://unpkg.com/turbolinks"></script>
@@ -29,13 +29,13 @@
                         {{ session('success') }}
                     </div>
                 @endif
-                
+
                 @if (session('error'))
                     <div class="alert alert-danger">
                         {{ session('error') }}
                     </div>
                 @endif
-            
+
 
                 <div class="container h-full flex flex-row max-w-full p-0 h-dvh">
 
@@ -70,20 +70,20 @@
             event.preventDefault(); // Prevent the form from submitting immediately
 
             swal({
-                title: "Are you sure?",
-                text: "Once deleted, you will not be able to recover this product!",
-                icon: "warning",
-                buttons: true,
-                dangerMode: true,
-            })
-            .then((willDelete) => {
-                if (willDelete) {
-                    event.target.form.submit(); // If the user confirms, submit the form
-                }
-            });
+                    title: "Are you sure?",
+                    text: "Once deleted, you will not be able to recover this product!",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        event.target.form.submit(); // If the user confirms, submit the form
+                    }
+                });
         }
     </script>
-    
+
 </body>
 
 </html>

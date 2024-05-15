@@ -127,8 +127,10 @@
                                                 </td>
                                                 <td>
                                                     @if ($product['warehouse_status'] == 'PH Warehouse' && $product['status'] == 'Arrive on Warehouse')
-                                                        <i class="mdi me-2 mdi-check text-lime-500">Qualify to packed for
-                                                            shipment </i>
+                                                        <i class="mdi me-2 mdi-check text-lime-500">Qualify to packed for shipment </i>
+                                                        <a href="{{ url('customers/' . $customerDataProfile['id'] . '/edit_product' . '/' . $product['id']) }}"
+                                                            class="btn btn-success mx-auto mx-md-0 text-white w-full"> Edit
+                                                        </a>
                                                     @else
                                                         <a href="{{ url('customers/' . $customerDataProfile['id'] . '/edit_product' . '/' . $product['id']) }}"
                                                             class="btn btn-success mx-auto mx-md-0 text-white w-full"> Edit
