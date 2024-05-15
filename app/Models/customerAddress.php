@@ -14,6 +14,7 @@ class customerAddress extends Model
         'customer_id',
         'street',
         'region', 
+        'city',
         'provice', 
         'barangay', 
         'zipcode',

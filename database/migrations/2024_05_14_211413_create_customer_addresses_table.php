@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('region');
             $table->string('province');
             $table->string('barangay');
+            $table->string('city');
             $table->string('zipcode');
             $table->date('birthdate');
             $table->string('gender');

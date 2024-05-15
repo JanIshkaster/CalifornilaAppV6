@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: [ 
-            'customer_store_data' // <-- exclude this route 
+            'customer_store_data', // <-- exclude this route 
+            'customer_pass_data/*',// <-- exclude this route 
+            'customer_pass_data_test/*' // <-- exclude this route 
         ]); 
         $middleware->append(Cors::class);
     })
