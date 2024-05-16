@@ -8,6 +8,7 @@ use App\Http\Controllers\CalculatorController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\formController;
+use App\Http\Controllers\ticketController;
 use App\Http\Controllers\createShopifyProduct;
 use Illuminate\Support\Facades\Route;
 use Diglactic\Breadcrumbs\Breadcrumbs;
@@ -35,7 +36,7 @@ Route::middleware('auth')->group(function () {
     //PRODUCTS PAGE
     Route::get('/products', [ProductsController::class, 'getProducts'])->name('getProducts');
     
-    //Customers PAGE
+    //CUSTOMERS PAGE
     Route::get('/customers', [CustomersController::class, 'getCustomers'])->name('getCustomers'); //DISPLAY CUSTOMERS
     Route::get('/customers/{id}', [CustomersController::class, 'openCustomersDataProfile'])->name('openCustomersDataProfile');  //DISPLAY CUSTOMERS PROFIL
     Route::get('/customers/{id}/add_product', [CustomersController::class, 'customerAddProducts'])->name('customerAddProducts');  //DISPLAY CUSTOMER ADD PRODUCT
@@ -44,6 +45,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/customers/{id}/update_product/{product_id}', [CustomersController::class, 'customerUpdateProduct'])->name('customerUpdateProduct');  //UPDATE CUSTOMER PRODUCT PAGE
     Route::delete('/customers/{id}/delete_product/{product_id}', [CustomersController::class, 'customerDeleteProduct'])->name('customerDeleteProduct');  //DELETE CUSTOMER PRODUCT PAGE
     Route::get('/customers/{id}/consolidate', [CustomersController::class, 'customerConsolidate'])->name('customerConsolidate');    //DISPLAY CUSTOMERS CONSOLIDATE
+
+    //ASSIGN TICKET PAGE
+    Route::get('/assign_ticket', [ticketController::class, 'assign_ticket'])->name('assign_ticket');
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');
@@ -62,11 +66,17 @@ Route::middleware('auth')->group(function () {
 
 });
 
-    //Handle form data from Shopify -> Customers data
+    //Save form data from Shopify -> Customers data
     Route::post('/customer_store_data', [formController::class, 'customer_store_data']);
 
+    //Update form data from Shopify -> Customers data
+    Route::post('/customer_store_data_update/{customer_id}', [formController::class, 'customer_store_data_update']);
+
     //Pass data from database to fill shopify store form
-    Route::post('/customer_pass_data/{CUSTOMER_ID}', [formController::class, 'customer_pass_data']);
+    Route::post('/customer_pass_data/{customer_id}', [formController::class, 'customer_pass_data']);
+
+    //Get products from Buying Assistance page - californila shopify
+    Route::post('/get_buying_assistance_products', [formController::class, 'get_buying_assistance_products']);
  
 
 require __DIR__.'/auth.php';
