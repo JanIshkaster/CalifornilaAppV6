@@ -46,8 +46,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/customers/{id}/delete_product/{product_id}', [CustomersController::class, 'customerDeleteProduct'])->name('customerDeleteProduct');  //DELETE CUSTOMER PRODUCT PAGE
     Route::get('/customers/{id}/consolidate', [CustomersController::class, 'customerConsolidate'])->name('customerConsolidate');    //DISPLAY CUSTOMERS CONSOLIDATE
 
-    //ASSIGN TICKET PAGE
-    Route::get('/assign_ticket', [ticketController::class, 'assign_ticket'])->name('assign_ticket');
+    //TICKETS PAGE
+    Route::get('/ticket', [ticketController::class, 'ticket_index'])->name('ticket_index'); // TICKET PAGE -> REGISTERED PRODUCT DISPLAY
+    Route::get('/ticket/assign-ticket', [ticketController::class, 'assign_ticket'])->name('assign_ticket'); // ASSIGN TICKET
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');
