@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\CustomerAddedProduct;
 use App\Models\customerAddress;
-use App\Models\BuyingAssistanceProducts;
+use App\Models\DeclaredProducts;
+use App\Models\Ticket;
+use App\Models\ticketNotes;
+use App\Models\ticketProofOfPayment;
+use App\Models\ticketAdditionalFees;
+use App\Models\customerLogs;
 
 class Customer extends Model
 {
@@ -20,8 +25,8 @@ class Customer extends Model
         'phone'
     ];
 
-    public function BuyingAssistanceProducts(){
-        return $this->hasMany(BuyingAssistanceProducts::class);
+    public function DeclaredProducts(){
+        return $this->hasMany(DeclaredProducts::class);
     }
 
     public function addedProducts(){
@@ -32,5 +37,13 @@ class Customer extends Model
         return $this->hasOne(customerAddress::class);
     }
 
+    public function Ticket(){
+        return $this->hasMany(Ticket::class);
+    } 
+
+    public function customerLogs(){
+        return $this->hasMany(customerLogs::class);
+    }
+ 
 
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\customerAddress;
-use App\Models\BuyingAssistanceProducts;
+use App\Models\DeclaredProducts;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -151,7 +151,7 @@ class formController extends Controller
 
 
     //Get and save products from Buying Assistance page to database - californila shopify
-     public function get_buying_assistance_products(Request $request){
+     public function get_declared_products(Request $request){
 
         $customer = null; // Declare $customer before the try block
     
@@ -180,15 +180,15 @@ class formController extends Controller
     
             // Loop through the products and save each one to the database
             for ($i = 0; $i < count($product_names); $i++) {
-                $BuyingAssistanceProducts = new BuyingAssistanceProducts;
-                $BuyingAssistanceProducts->product_name = $product_names[$i];
-                $BuyingAssistanceProducts->product_link = $product_links[$i];
-                $BuyingAssistanceProducts->product_qty = $product_qtys[$i];
-                $BuyingAssistanceProducts->product_variant = $product_variants[$i];
-                $BuyingAssistanceProducts->shipping_method = $data['shipping_method'];
-                $BuyingAssistanceProducts->request_method = $data['method'];
-                $BuyingAssistanceProducts->customer_id = $customer->id; // Associate the BuyingAssistanceProducts with the customer  
-                $BuyingAssistanceProducts->save(); // Save the data
+                $DeclaredProducts = new DeclaredProducts;
+                $DeclaredProducts->product_name = $product_names[$i];
+                $DeclaredProducts->product_link = $product_links[$i];
+                $DeclaredProducts->product_qty = $product_qtys[$i];
+                $DeclaredProducts->product_variant = $product_variants[$i];
+                $DeclaredProducts->shipping_method = $data['shipping_method'];
+                $DeclaredProducts->request_method = $data['method'];
+                $DeclaredProducts->customer_id = $customer->id; // Associate the DeclaredProducts with the customer  
+                $DeclaredProducts->save(); // Save the data
             }
     
             // Commit the transaction if no error.
@@ -199,7 +199,7 @@ class formController extends Controller
     
         } catch (\Exception $e) {
             // Log the error message along with the customer_id for traceability
-            Log::error('Error in get_buying_assistance_products for customer_id ' . ($customer ? $customer->id : 'unknown') . ': ' . $e->getMessage());
+            Log::error('Error in get_declared_products for customer_id ' . ($customer ? $customer->id : 'unknown') . ': ' . $e->getMessage());
     
             // Log the request data and the exception stack trace for debugging
             Log::error('Request data: ' . print_r($data, true));

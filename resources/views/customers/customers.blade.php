@@ -17,22 +17,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php  
-                            foreach ($customers as $customer){
-                        ?>
-                        <tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                            <td class="px-6 py-4"><?= $customer['customer_id'] ?></td>
-                            <td class="px-6 py-4"><?= $customer['first_name'] ?> <?= $customer['last_name'] ?> </td>
-                            <td class="px-6 py-4"><?= $customer['email'] ?> </td>
-                            <td class="px-6 py-4"></td>
-                            <td class="px-6 py-4"><a
-                                    href="{{ route('openCustomersDataProfile', ['id' => $customer['id']]) }}"
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">View</a>
-                            </td>
-                        </tr>
-                        <?php    
-                            } 
-                        ?>
+ 
+                        @forelse ($customers as $customer) 
+
+                            <tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <td class="px-6 py-4"><?= $customer['customer_id'] ?></td>
+                                <td class="px-6 py-4"><?= $customer['first_name'] ?> <?= $customer['last_name'] ?> </td>
+                                <td class="px-6 py-4"><?= $customer['email'] ?> </td>
+                                <td class="px-6 py-4"></td>
+                                <td class="px-6 py-4"><a
+                                        href="{{ route('openCustomersDataProfile', ['id' => $customer['id']]) }}"
+                                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">View</a>
+                                </td>
+                            </tr>
+
+                        @empty
+                            <tr class="odd border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <td valign="top" colspan="6" class="dataTables_empty px-6 py-4">No data available in table</td>
+                            </tr>
+                        @endforelse
+ 
                     </tbody>
                 </table>
             </div>
