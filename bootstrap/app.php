@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'customer_pass_data',// <-- exclude this route for customer profile
             'customer_store_data_update',// <-- exclude this route for customer update profile
             'customer_store_data_update/*',// <-- exclude this route for customer update profile
-            'get_buying_assistance_products' // <-- exclude this route for buying assistance
+            'get_declared_products' // <-- exclude this route for buying assistance
         ]); 
         $middleware->append(Cors::class);
     })

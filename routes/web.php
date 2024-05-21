@@ -9,6 +9,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\formController;
 use App\Http\Controllers\ticketController;
+use App\Http\Controllers\ticketNoteController;
 use App\Http\Controllers\createShopifyProduct;
 use Illuminate\Support\Facades\Route;
 use Diglactic\Breadcrumbs\Breadcrumbs;
@@ -48,7 +49,8 @@ Route::middleware('auth')->group(function () {
 
     //TICKETS PAGE
     Route::get('/ticket', [ticketController::class, 'ticket_index'])->name('ticket_index'); // TICKET PAGE -> REGISTERED PRODUCT DISPLAY
-    Route::get('/ticket/assign-ticket', [ticketController::class, 'assign_ticket'])->name('assign_ticket'); // ASSIGN TICKET
+    Route::get('/ticket/assign-ticket/{customer_id}', [ticketController::class, 'assign_ticket'])->name('assign_ticket'); // ASSIGN TICKET PAGE
+    Route::post('/ticket/assign-ticket/{customer_id}/store_ticket_note', [ticketNoteController::class, 'store_ticket_note'])->name('store_ticket_note'); // STORE TICKET NOTE
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');
@@ -77,7 +79,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/customer_pass_data/{customer_id}', [formController::class, 'customer_pass_data']);
 
     //Get products from Buying Assistance page - californila shopify
-    Route::post('/get_buying_assistance_products', [formController::class, 'get_buying_assistance_products']);
+    Route::post('/get_declared_products', [formController::class, 'get_declared_products']);
  
 
 require __DIR__.'/auth.php';
