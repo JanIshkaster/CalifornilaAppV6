@@ -51,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/ticket', [ticketController::class, 'ticket_index'])->name('ticket_index'); // TICKET PAGE -> REGISTERED PRODUCT DISPLAY
     Route::get('/ticket/assign-ticket/{customer_id}', [ticketController::class, 'assign_ticket'])->name('assign_ticket'); // ASSIGN TICKET PAGE
     Route::post('/ticket/assign-ticket/{customer_id}/store_ticket_note', [ticketNoteController::class, 'store_ticket_note'])->name('store_ticket_note'); // STORE TICKET NOTE
+    Route::post('/ticket/assign-ticket/{customer_id}/add_product', [ticketController::class, 'addProducts'])->name('addProducts'); // ADD PRODUCT - TICKET PAGE
+    Route::delete('/ticket/assign-ticket/{customer_id}/delete_product/{product_id}', [ticketController::class, 'deleteProducts'])->name('deleteProducts'); // DELETE PRODUCT - TICKET PAGE
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');

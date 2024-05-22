@@ -52,7 +52,7 @@ class ticketController extends Controller
                     'notes' => $existing_ticket->ticketNotes
                 ]);
             }
-        
+
         
             // Generate a ticket_id with a date prefix
             $date_prefix = date('Ymd'); // This will give a string like "20240522" for May 22, 2024
@@ -67,7 +67,7 @@ class ticketController extends Controller
             // Commit the transaction if no error.
             DB::commit();
         
-            return view('tickets.assign-ticket', ['customer' => $customer, 'ticket_id' => $ticket->ticket_id]);
+            return view('tickets.assign-ticket', ['customer' => $customer, 'ticket_id' => $ticket->ticket_id, 'uniqueShippingMethods' => $uniqueShippingMethods]);
             
         } catch (\Throwable $e) {
 
@@ -82,7 +82,73 @@ class ticketController extends Controller
 
         } 
     }
+
+
+
+    //Add products - Ticket Page
+    public function addProducts(Request $request, $customer_id){ 
+
+       try {
+        
+            // Start a database transaction
+            DB::beginTransaction();
+
+            // Validate the request
+            $request->validate([
+                'product_name' => 'required|string|max:255',
+                'product_link' => 'required|url',
+                'product_qty' => 'required|integer|min:1',
+                'product_variant' => 'nullable|string|max:255', 
+                'shipping_method' => 'nullable|string|max:255', 
+                'request_method' => 'nullable|string|max:255', 
+            ]);
+
+            // Get validated data
+            $data = $request->all();
+
+            // Create a new product and save it to the database
+            $addProduct = new DeclaredProducts;
+            $addProduct->customer_id = $customer_id; 
+            $addProduct->product_name = $data['product_name'];  
+            $addProduct->product_link = $data['product_link']; 
+            $addProduct->product_qty = $data['product_qty'];  
+            $addProduct->product_variant = $data['product_variant'];  
+            $addProduct->shipping_method = $data['shipping_method'];  
+            $addProduct->request_method = $data['request_method'];  
+            $addProduct->save(); // Save the data
+
+            // Commit the transaction
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Product added successfully'); // Redirect back with a success message
+
+       } catch (\Throwable $e) {
+        
+            // Rollback the transaction
+            DB::rollBack();
+
+            // Log the error for debugging
+            \Log::error('Failed to add product: ' . $e->getMessage());
     
-    
+            // Redirect back with an error message
+            return redirect()->back()->with('error', 'Failed to add product. Please try again.');
+        }
+
+    }
+
+
+    //Delete products - Ticket Page
+    public function deleteProducts($customer_id, $product_id){ 
+ 
+        // Find the product by ID
+        $product = DeclaredProducts::findOrFail($product_id);
+
+        // Delete the product
+        $product->delete();
+
+        // Redirect back with a success message
+        return redirect()->back()->with('success', 'Product deleted successfully.'); 
+ 
+     }
     
 }
