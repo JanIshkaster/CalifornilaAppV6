@@ -17,6 +17,7 @@ class Ticket extends Model
         'customer_id',
         'ticket_id',
         'steps',
+        'shipping_method',
         'status',
         'tracking' 
     ];
@@ -38,5 +39,8 @@ class Ticket extends Model
         return $this->hasMany(ticketAdditionalFees::class);
     }
 
+    public function DeclaredProducts(){
+        return $this->belongsTo(DeclaredProducts::class);
+    }
 
 }

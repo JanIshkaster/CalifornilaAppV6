@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('customer_id'); // Add this line
             $table->string('ticket_id', 50)->unique();
             $table->string('steps')->nullable();
+            $table->string('shipping_method')->nullable();
             $table->string('status')->nullable();
             $table->string('tracking')->nullable();
             $table->timestamps();

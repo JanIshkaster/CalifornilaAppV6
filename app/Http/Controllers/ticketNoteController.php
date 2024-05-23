@@ -15,7 +15,7 @@ use App\Mail\sendMail;
 class ticketNoteController extends Controller
 {
     //Store the ticket note to database
-    public function store_ticket_note(Request $request){   
+    public function store_ticket_note(Request $request){    
         
         // Validate the request
         $request->validate([

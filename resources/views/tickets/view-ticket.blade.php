@@ -65,7 +65,7 @@
                                                             Submit Information
                                                         </h5> 
                                                     </div>
-                                                    <form method="POST" id="note_submit" action="{{ route('store_ticket_note', ['customer_id' => $customer->id]) }}">
+                                                    <form method="POST" id="note_submit" action="{{ route('store_ticket_note', ['customer_id' => $customer->id, 'ticket_id' => $ticket_id]) }}">
                                                         @csrf
                                                         <div class="modal-body">
                                                             <div class="m-2">

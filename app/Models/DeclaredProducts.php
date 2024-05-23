@@ -23,4 +23,9 @@ class DeclaredProducts extends Model
     public function customer(){
         return $this->belongsTo(Customer::class);
     }
+
+    public function Ticket(){
+        return $this->hasOne(Ticket::class);
+    }
+
 }

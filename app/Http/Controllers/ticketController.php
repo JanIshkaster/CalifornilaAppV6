@@ -16,17 +16,38 @@ class ticketController extends Controller
 {
     //Ticket Page
     public function ticket_index() {
-        
-        // Retrieve only customers who have DeclaredProducts
-        $customers = Customer::with('DeclaredProducts')->has('DeclaredProducts')->get();
+
+        $customers = Customer::with(['DeclaredProducts', 'Ticket'])->has('DeclaredProducts')->get();
     
-        return view('tickets.ticket_index', ['customers' => $customers]);
+        // Initialize an empty array to hold the customers and their tickets
+        $customer_tickets = [];
+    
+        foreach ($customers as $customer) {
+            // For each shipping method, add the customer and their ticket to the array
+            foreach ($customer->DeclaredProducts->groupBy('shipping_method') as $shipping_method => $products) { 
+                $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first();
+                $ticket_id = $ticket ? $ticket->ticket_id : null;
+
+                $customer_tickets[] = [
+                    'customer' => $customer,
+                    'ticket_id' => $ticket_id, 
+                    'shipping_method' => $shipping_method
+                ];
+            }
+        }
+    
+        return view('tickets.ticket_index', ['customer_tickets' => $customer_tickets, 'customers' => $customers]);
     }
     
+
     
+     
 
     //Assign Ticket Page
-    public function assign_ticket($customer_id){
+    public function assign_ticket(Request $request, $customer_id, $ticket_id){ 
+
+        $data = $request->all();
+        $shipping_method = $data['shipping_method'];
 
         try {
 
@@ -38,8 +59,7 @@ class ticketController extends Controller
 
             //Get customer details with products and ticket
             $customer = Customer::with(
-                [
-                    'DeclaredProducts', 
+                ['DeclaredProducts', 
                     'Ticket.ticketAdditionalFees', 
                     'Ticket.ticketNotes'
                 ])->find($customer_id); 
@@ -54,20 +74,25 @@ class ticketController extends Controller
             }
 
         
-            // Generate a ticket_id with a date prefix
-            $date_prefix = date('Ymd'); // This will give a string like "20240522" for May 22, 2024
-            $generate_ticket_id = $date_prefix . '_' . Str::random(5); // This will append a random 5-character string to the date prefix
+            if ($ticket_id == 'assign_ticket_number') {
+                // Generate a ticket ID
+                $date_prefix = date('Ymd'); // This will give a string like "20240522" for May 22, 2024
+                $ticket_number = Ticket::where('customer_id', $customer_id)->count() + 1; // Get the count of existing tickets for the specific customer and add one to it
+                $formatted_ticket_number = str_pad($ticket_number, 5, '0', STR_PAD_LEFT); // Format the ticket number to have 5 digits with leading zeros
+                $ticket_id = $date_prefix . '_' . $formatted_ticket_number; // This will append the formatted ticket number to the date prefix
+            }
         
             // Save generated ticket ID
             $ticket = new Ticket;
             $ticket->customer_id = $customer->id;
-            $ticket->ticket_id = $generate_ticket_id;
+            $ticket->ticket_id = $ticket_id;
+            $ticket->shipping_method = $shipping_method;
             $ticket->save();
 
             // Commit the transaction if no error.
             DB::commit();
         
-            return view('tickets.assign-ticket', ['customer' => $customer, 'ticket_id' => $ticket->ticket_id, 'uniqueShippingMethods' => $uniqueShippingMethods]);
+            return redirect()->route('view_ticket')->with('success', 'Ticket assigned successfully');
             
         } catch (\Throwable $e) {
 
@@ -81,8 +106,33 @@ class ticketController extends Controller
             return back()->with(['error' => 'Error Saving Ticket ID']);
 
         } 
-    }
+    } 
 
+    //Open Ticket Page
+    public function view_ticket(Request $request, $customer_id, $ticket_id){ 
+
+        // Check if a ticket with the given customer_id already exists
+        $existing_ticket = Ticket::where('customer_id', $customer_id)->first();
+
+        //Get customer details with products and ticket
+        $customer = Customer::with(
+            ['DeclaredProducts', 
+                'Ticket.ticketAdditionalFees', 
+                'Ticket.ticketNotes'
+            ])->find($customer_id); 
+    
+        if ($existing_ticket) {
+            // If a ticket already exists, return the view with the existing ticket_id
+            return view('tickets.view-ticket', [
+                'customer' => $customer, 
+                'ticket_id' => $existing_ticket->ticket_id,
+                'notes' => $existing_ticket->ticketNotes
+            ]);
+        }
+    
+        return view('tickets.view-ticket', ['customer' => $customer, 'ticket_id' => $ticket_id]);
+     
+    }
 
 
     //Add products - Ticket Page
