@@ -125,29 +125,17 @@
                                 </td>
                             </tbody>
                         </table>
+
                         <p class="mb-2" style="font-size:12px">
                             STATUS: <span class="badge text-white bg-blue-700" style="font-size:12px"> STATUS </span> 
                         </p>
+
                         <p class="mb-2" style="font-size:12px">SHIPPING METHOD: 
-                             
-                            @php
-                                // Collect unique shipping methods and request methods from the DeclaredProducts collection
-                                $uniqueRequestMethods = $customer->DeclaredProducts->pluck('request_method')->unique();
-                                $requestMethod = $uniqueRequestMethods->first();
-
-                                $uniqueShippingMethods = $customer->DeclaredProducts->pluck('shipping_method')->unique();
-                                $shippingMethod = $uniqueShippingMethods->first();
-
-                            @endphp
                             
-                            
-                                <span class="badge text-white bg-red-700" style="font-size:12px">
-                                    {{ $shippingMethod }}
-                                </span>
-                        
-                        
-                          
-                            
+                            <span class="badge text-white bg-red-700" style="font-size:12px">
+                                {{ $customer->Ticket->first()->shipping_method == 'sea-cargo' ? 'Sea Cargo' : 'Air Cargo' }}
+                            </span>
+ 
                         </p>
                         <p class="mb-2" style="font-size:12px">
                             CURRENT STEP: <span class="badge text-white bg-green-700" style="font-size:12px"> STEP </span>
@@ -225,8 +213,8 @@
                                                         <input type="text" class="form-control" name="product_variant" id="add_variation"/>
                                                     </div>
                                                     <input type="hidden" name="ticket_id" value="{{ $ticket_id }}" /> 
-                                                    <input type="hidden" name="shipping_method" value="{{ $shippingMethod }}" />
-                                                    <input type="hidden" name="request_method" value="{{ $requestMethod }}" />
+                                                    <input type="hidden" name="shipping_method" value="{{ $customer->Ticket->first()->shipping_method }}" />
+                                                    <input type="hidden" name="request_method" value="{{ $customer->DeclaredProducts->first()->request_method }}" />
                                                 </div>
 
                                                 <div class="modal-footer">
@@ -253,7 +241,9 @@
                                     <th scope="col">Delete</th>
                                     </tr>
                                 </thead>
-                                    @forelse ($customer->DeclaredProducts as $product)
+ 
+                                    {{-- Access the related declared products --}}
+                                    @forelse ($products as $product)
 
                                         <tr>
                                             <td>{{ $product->product_name }}</td>
@@ -279,7 +269,8 @@
                                     
                                     @empty
                                         No data
-                                    @endforelse
+                                    @endforelse 
+
                             </table>
                         </div>
                 </div>

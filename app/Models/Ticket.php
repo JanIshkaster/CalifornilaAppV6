@@ -40,7 +40,7 @@ class Ticket extends Model
     }
 
     public function DeclaredProducts(){
-        return $this->belongsTo(DeclaredProducts::class);
+        return $this->belongsToMany(DeclaredProducts::class);
     }
 
 }

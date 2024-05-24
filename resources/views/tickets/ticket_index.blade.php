@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <div class="page-title-container max-w-full text-center mb-3">
+    <div class="page-title-container max-w-full text-left px-3 mb-3">
         <h1 class="text-2xl font-medium">Declared Products</h1>
     </div>
 
@@ -27,7 +27,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($customer_tickets as $customer_ticket)
+                        @foreach ($customer_tickets as $customer_ticket)  
+                        
                             <tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <td class="px-6 py-4">#{{ $customer_ticket['customer']->id ?? '' }}</td>
                                 <td class="px-6 py-4">{{ $customer_ticket['customer']->first_name ?? '' }} {{ $customer_ticket['customer']->last_name ?? '' }}</td>
@@ -36,9 +37,11 @@
                                     <ul>
                                         @foreach ($customer_ticket['customer']->DeclaredProducts->where('shipping_method', $customer_ticket['shipping_method']) as $product)
                                             <li>
+                                                
                                                 <a href="{{ $product->product_link }}" target="_blank"
                                                     class="d-block px-2 py-1 transition-all hover:bg-red-50 hover:text-gray-900 hover:bg-gray-900">
                                                     <i class="mdi mdi-open-in-new"></i>
+                                                    #{{ $product->id ?? '' }}
                                                     {{ $product->product_name ?? '' }}
                                                 </a>
                                             </li>
@@ -61,11 +64,12 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    <p>Ticket ID: {{ $customer_ticket['ticket_id'] }}</p>
-                                    <p>SHIPPNIG METHOD: {{ $customer_ticket['shipping_method'] }}</p>
+                                    
+
 
                                     @if ($customer_ticket['ticket_id'])
-                                        <a class="btn btn-success w-full" href="{{ route('view_ticket', ['customer_id' => $customer_ticket['customer']->id,'ticket_id' => $customer_ticket['ticket_id']]) }}"> 
+                                        <a class="btn btn-success w-full" 
+                                            href="{{ route('view_ticket', ['customer_id' => $customer_ticket['customer']->id,'ticket_id' => $customer_ticket['ticket_id']]) }}"> 
                                             <span class="mdi mdi-ticket-account" aria-hidden="true"></span>
                                             View Ticket
                                         </a>
@@ -75,14 +79,20 @@
                                             style="display:inline;">
                                             @csrf 
                                             <input type="hidden" name="shipping_method" value="{{ ucfirst($customer_ticket['shipping_method']) }}">
+                                        
+                                            {{-- Add hidden input fields for product IDs --}}
+                                            @foreach ($customer_ticket['customer']->DeclaredProducts->where('shipping_method', $customer_ticket['shipping_method']) as $product)
+                                                <input type="hidden" name="product_ids[]" value="{{ $product->id }}">
+                                            @endforeach
+                                        
                                             <button type="button" class="btn btn-primary w-full btn-sm assignTicket" 
                                                 data-id="{{ $customer_ticket['customer']->id }}" 
                                                 data-name="{{ $customer_ticket['customer']->first_name ?? '' }} {{ $customer_ticket['customer']->last_name ?? '' }}">
-
                                                 <span class="mdi mdi-delete-empty"></span>
                                                 Assign Ticket
                                             </button>
                                         </form>
+                                                                            
                                     @endif
                                 
                                     <a class="btn btn-info w-full" href="">
