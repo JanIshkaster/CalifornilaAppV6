@@ -36,7 +36,7 @@ class Ticket extends Model
     }
 
     public function ticketAdditionalFees(){
-        return $this->hasMany(ticketAdditionalFees::class);
+        return $this->hasMany(ticketAdditionalFees::class, 'ticket_id', 'ticket_id');
     }
 
     public function DeclaredProducts(){

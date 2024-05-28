@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class ticketAdditionalFees extends Model
 {
-    protected $fillable = ['ticket_id', 'amount'];
+
+    use HasFactory;
+
+    protected $fillable = ['ticket_id', 'amount', 'fee_data_details'];
 
     public function ticket()
     {
-        return $this->belongsTo(Ticket::class);
+        return $this->belongsTo(Ticket::class, 'ticket_id', 'ticket_id');
     }
 }

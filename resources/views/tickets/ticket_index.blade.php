@@ -65,7 +65,11 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     
-
+                                    @php
+                                        echo '<p>Customer Name: ' .  $customer_ticket['customer']->first_name . '</p>'; 
+                                        echo '<p>Shipping Method: ' .  $customer_ticket['shipping_method'] . '</p>'; 
+                                        echo '<p>Ticket ID: ' .  $customer_ticket['ticket_id'] . '</p>'; 
+                                    @endphp
 
                                     @if ($customer_ticket['ticket_id'])
                                         <a class="btn btn-success w-full" 
@@ -78,7 +82,7 @@
                                             action="{{ route('assign_ticket', ['customer_id' => $customer_ticket['customer']->id, 'ticket_id' => 'assign_ticket_number']) }}" 
                                             style="display:inline;">
                                             @csrf 
-                                            <input type="hidden" name="shipping_method" value="{{ ucfirst($customer_ticket['shipping_method']) }}">
+                                            <input type="hidden" name="shipping_method" value="{{ $customer_ticket['shipping_method'] }}">
                                         
                                             {{-- Add hidden input fields for product IDs --}}
                                             @foreach ($customer_ticket['customer']->DeclaredProducts->where('shipping_method', $customer_ticket['shipping_method']) as $product)

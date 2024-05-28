@@ -34,10 +34,10 @@
                                 <td>
                                     <a href="#" target="blank">
                                         <i class="fas fa-link"></i>
-                                        {{ $customer->first_name }} {{ $customer->last_name }}
+                                        {{ $existing_ticket->Customer->first_name }} {{ $existing_ticket->Customer->last_name }}
                                     </a>
                                 </td>
-                                <td>{{ $customer->email }}</td>
+                                <td>{{ $existing_ticket->Customer->email }}</td>
                                 <td>
                                     <div x-data="{ open_add_note: false }">
                                         <button type="button" class="btn btn-primary" @click="open_add_note = !open_add_note">
@@ -65,7 +65,7 @@
                                                             Submit Information
                                                         </h5> 
                                                     </div>
-                                                    <form method="POST" id="note_submit" action="{{ route('store_ticket_note', ['customer_id' => $customer->id, 'ticket_id' => $ticket_id]) }}">
+                                                    <form method="POST" id="note_submit" action="{{ route('store_ticket_note', ['customer_id' => $existing_ticket->Customer->id, 'ticket_id' => $ticket_id]) }}">
                                                         @csrf
                                                         <div class="modal-body">
                                                             <div class="m-2">
@@ -73,8 +73,8 @@
                                                                     <label for="noted_data" class="mb-2">Add Note:</label>
                                                                     <textarea class="form-control" name="ticket_note" id="noted_data" rows="3"></textarea>
                                                                     <input type="hidden" name="ticket_id" value="{{ $ticket_id }}" />
-                                                                    <input type="hidden" name="customer_first_name" value="{{ $customer->first_name }}" />
-                                                                    <input type="hidden" name="customer_id" value="{{ $customer->id }}" />
+                                                                    <input type="hidden" name="customer_first_name" value="{{ $existing_ticket->Customer->first_name }}" />
+                                                                    <input type="hidden" name="customer_id" value="{{ $existing_ticket->Customer->id }}" />
                                                                     <input type="hidden" name="email_type" value="emailNote" />
                                                                 </div>
                                                             </div>
@@ -101,22 +101,100 @@
                                     </div> 
 
                                 </td>
-                                <td class="d-flex">
-                                    <button type="button" class="btn btn-primary mx-1" data-toggle="modal" data-target="#add_fees">
-                                        <span class="mdi mdi-plus-box"></span>
-                                    </button>
-                                    <button type="button" class="btn btn-warning mx-1" data-toggle="modal" data-target="#view_payments">
-                                        <span class="mdi mdi-cash"></span>
+                                <td class="block"> 
+                                    {{-- START - ADD FEE MODAL --}}
+                                    <div x-data="{ open_add_fee: false }" class="w-full d-flex">  
 
-                                        @foreach ($customer->Ticket as $ticket)
-                                            @if ($ticket->ticketAdditionalFees->first() && $ticket->ticketAdditionalFees->first()->amount > 0)
-                                                <span class="badge badge-danger" style="font-size:10px">
-                                                    {{ $ticket->ticketAdditionalFees->first()->amount }}
-                                                </span>
-                                            @endif
-                                       @endforeach
+                                        <button @click="open_add_fee = !open_add_fee" type="button" class="btn btn-primary mx-1" data-toggle="modal" data-target="#add_fees">
+                                            <span class="mdi mdi-plus-box"></span>
+                                        </button> 
+
+                                        <div x-show="open_add_fee" x-transition:enter="transition ease-out duration-300"
+                                            x-transition:enter-start="opacity-0 transform scale-90"
+                                            x-transition:enter-end="opacity-100 transform scale-100"
+                                            x-transition:leave="transition ease-in duration-300"
+                                            x-transition:leave-start="opacity-100 transform scale-100"
+                                            x-transition:leave-end="opacity-0 transform scale-90"
+                                            x-bind:class="{ 'block': open_add_fee, 'hidden': !open_add_fee }" 
+                                            class="fixed inset-0 flex items-center justify-center z-50 hidden">
                                     
-                                    </button>
+                                            <!-- Background overlay -->
+                                            <div class="absolute inset-0 bg-black opacity-20" @click="open_add_fee = false"></div>
+
+                                            <!-- Modal Add Fee form -->
+                                            <div class="bg-white rounded shadow-lg p-8 m-4 w-2/4 max-h-full text-center z-50">
+                                                <div class="modal-content">
+                                                    <div class="modal-header ">
+                                                        <h5 class="modal-title mb-2" id="exampleModalLongTitle" style="font-size: 1.25rem;">
+                                                            Submit Information
+                                                        </h5> 
+                                                    </div>
+                                                    <form method="POST" id="add_fee_submit" action="{{ route('store_add_fee', ['customer_id' => $existing_ticket->Customer->id, 'ticket_id' => $ticket_id]) }}">
+                                                        @csrf
+                                                        <div class="modal-body">
+                                                            <div class="m-2">
+                                                                <div class="form-group text-left">
+                                                                    <label for="amount" class="mb-2">Add Fee:</label>
+                                                                    <div class="input-group mb-4">
+                                                                        <div class="input-group-prepend d-flex">
+                                                                            <span class="input-group-text peso">₱</span>
+                                                                        </div>
+                                                                        <input type="number" min="1" step="any" name="amount" id="amount" class="form-control" aria-label="Amount (to the nearest peso)">
+                                                                    </div>
+                                                                    <label for="fee_data_details" class="mb-2">What's the fee for?:</label>
+                                                                    <textarea class="form-control" name="fee_data_details" id="fee_data_details" rows="3"></textarea>
+                                                                    <input type="hidden" name="ticket_id" value="{{ $ticket_id }}" />
+                                                                    <input type="hidden" name="customer_first_name" value="{{ $existing_ticket->Customer->first_name }}" />
+                                                                    <input type="hidden" name="customer_id" value="{{ $existing_ticket->Customer->id }}" />
+                                                                    <input type="hidden" name="email_type" value="emailFee" />
+                                                                </div>
+                                                            </div> 
+
+                                                            @forelse ($additonal_fees as $additonal_fee)
+                                                                <div class="m-2 text-left" style="border-top: 1px solid #80808054; padding: 10px;">
+                                                                    <div class="d-flex">
+                                                                        <strong>Additonal Fee#{{ $loop->iteration }}:</strong> 
+                                                                        <p class="mx-2">₱ {{ $additonal_fee->amount }}</p>
+                                                                    </div> 
+                                                                    <div class="block">
+                                                                        <p class="mx-2"> - {{ $additonal_fee->fee_data_details }}</p>
+                                                                    </div>
+
+                                                                </div>
+                                                            @empty
+                                                                No Additional Fee added yet
+                                                            @endforelse
+
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <div class="total_additional_fee_container">
+                                                                <h3>TOTAL:</h3>
+                                                                <p>{{ $additonal_fees->sum('amount') }}</p>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-primary">Add Fee</button>
+                                                            <button type="button" class="btn btn-secondary" @click="open_add_fee = false">Close</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div> 
+
+
+                                        <button @click="open_add_fee = !open_add_fee" type="button" class="btn btn-warning mx-1" data-toggle="modal" data-target="#view_payments">
+                                            <span class="mdi mdi-cash"></span>  
+                                            @foreach ($existing_ticket->Customer->Ticket as $ticket) 
+                                                @if ($ticket->ticketAdditionalFees->first() && $ticket->ticketAdditionalFees->first()->amount > 0)
+                                                    <span class="badge badge-danger" style="font-size:10px">
+                                                        {{ $ticket->ticketAdditionalFees->sum('amount') }}
+                                                    </span>
+                                                @endif
+                                           @endforeach 
+                                        </button>
+                                        
+                                    </div> 
+                                    {{-- END - ADD FEE MODAL --}} 
+
+
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#view_logs">
@@ -133,7 +211,7 @@
                         <p class="mb-2" style="font-size:12px">SHIPPING METHOD: 
                             
                             <span class="badge text-white bg-red-700" style="font-size:12px">
-                                {{ $customer->Ticket->first()->shipping_method == 'sea-cargo' ? 'Sea Cargo' : 'Air Cargo' }}
+                                {{ $existing_ticket->shipping_method == 'sea-cargo' ? 'Sea Cargo' : 'Air Cargo' }}
                             </span>
  
                         </p>
@@ -151,10 +229,17 @@
                             </p>
                         @endif
                     
+                        @if ($additonal_fees)
+                            <p class="mb-2" style="font-size:12px">
+                                TOTAL FEES: <span class="badge text-white bg-purple-700" style="font-size:12px">FEE(s) ADDED</span>
+                            </p>
+                        @else
+                            <p class="mb-2" style="font-size:12px">
+                                TOTAL FEES: <span class="badge text-white bg-gray-900" style="font-size:12px"> NONE </span>
+                            </p>
+                        @endif
 
-                        <p class="mb-2" style="font-size:12px">
-                            TOTAL FEES: <span class="badge text-white bg-purple-700" style="font-size:12px"> TOTAL FEES </span>
-                        </p>
+
 
                     </div>
                 </div>
@@ -191,7 +276,7 @@
                                                     Submit Product Information
                                                 </h5> 
                                             </div>
-                                            <form method="POST" id="add_product_form" action="{{ route('addProducts', ['customer_id' => $customer->id]) }}">
+                                            <form method="POST" id="add_product_form" action="{{ route('addProducts', ['customer_id' => $existing_ticket->Customer->id]) }}">
                                                 @csrf
                                                 <div class="modal-body text-left block w-full">
                                                     <div class="form-group w-full inline-block ">
@@ -213,8 +298,8 @@
                                                         <input type="text" class="form-control" name="product_variant" id="add_variation"/>
                                                     </div>
                                                     <input type="hidden" name="ticket_id" value="{{ $ticket_id }}" /> 
-                                                    <input type="hidden" name="shipping_method" value="{{ $customer->Ticket->first()->shipping_method }}" />
-                                                    <input type="hidden" name="request_method" value="{{ $customer->DeclaredProducts->first()->request_method }}" />
+                                                    <input type="hidden" name="shipping_method" value="{{ $existing_ticket->shipping_method }}" />
+                                                    <input type="hidden" name="request_method" value="{{ $request_method }}" />
                                                 </div>
 
                                                 <div class="modal-footer">
@@ -321,6 +406,7 @@
 
 {{-- DELETE PRODUCT SWAL --}}
 <script>
+
     document.querySelectorAll('.deleteButton').forEach(function(button) {
         button.addEventListener('click', function(e) {
             e.preventDefault();
@@ -341,6 +427,52 @@
         });
     });
 
+</script>
+
+{{-- LOADING SPINNER WHEN SENDING FORM REQUEST --}}
+
+<script>
+    // Intercept form submission for add_fee_submit form
+    document.getElementById('add_fee_submit').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Show SweetAlert loading spinner
+        Swal.fire({
+            title: 'Please Wait...',
+            allowEscapeKey: false,
+            allowOutsideClick: false, 
+            showConfirmButton: false,
+            onOpen: ()=>{
+                Swal.showLoading();
+            }
+        });
+
+        // Submit the form after a short delay (to show the spinner)
+        setTimeout(function() {
+            document.getElementById('add_fee_submit').submit();
+        }, 500); // Adjust delay time as needed
+    });
+
+    // Intercept form submission for note_submit form
+    document.getElementById('note_submit').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Show SweetAlert loading spinner
+        Swal.fire({
+            title: 'Please Wait...',
+            allowEscapeKey: false,
+            allowOutsideClick: false, 
+            showConfirmButton: false,
+            onOpen: ()=>{
+                Swal.showLoading();
+            }
+        });
+
+        // Submit the form after a short delay (to show the spinner)
+        setTimeout(function() {
+            document.getElementById('note_submit').submit();
+        }, 500); // Adjust delay time as needed
+    });
 </script>
 
 @endsection
