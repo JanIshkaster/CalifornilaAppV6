@@ -31,8 +31,18 @@ class sendMail extends Mailable
             case 'emailNote':
                 return '<div class="card-header"> <h3>Hi ' . e($data['customer_first_name']) . ', new note has been added to your ticket#: ' . e($data['ticket_id']) . '</h3> </div> <div class="card-body"> <h4>NOTE:</h4> <p>' . e($data['ticket_note']) . '</p> </div>';
             
-            case 'additionalFees':
-                return '<div class="card-header"> <h3>Hi ' . e($data['customer_first_name']) . ', additional fees has been added to your ticket#: ' . e($data['ticket_id']) . '</h3> </div> <div class="card-body"> <h4>Fee:</h4> <p>' . e($data['additional_fee']) . '</p> </div>';
+            case 'emailFee':
+                return '<div class="card-header">
+                <h3>Hi ' . e($data['customer_first_name']) . ', additional fees has been added to your ticket#: ' . e($data['ticket_id']) . '</h3> 
+                </div>
+                <div class="card-body" style="margin-bottom:20px;">
+                    <div class="fee_container" style="display: flex; align-items: center;">
+                        <h4 style="margin:0;">Fee:</h4> <span style="margin-left:10px;">' . e($data['amount']) . '</span>
+                    </div> 
+                    <div class="purpose_container" style="display: flex; align-items: center;">
+                        <h4 style="margin:0;">Purpose:</h4> <span style="margin-left:10px;">' . e($data['fee_data_details']) . '</span>
+                    </div> 
+                </div>';
     
             default:
                 return '';

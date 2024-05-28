@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('ticket_id', 50);
             $table->decimal('amount', 8, 2);
+            $table->string('fee_data_details', 100);
             $table->timestamps();
         
             $table->foreign('ticket_id')->references('ticket_id')->on('tickets')->onDelete('cascade');

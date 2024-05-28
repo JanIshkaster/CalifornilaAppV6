@@ -9,15 +9,17 @@ use App\Models\DeclaredProducts;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Ticket;
+use App\Models\ticketAdditionalFees;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+
 
 class ticketController extends Controller
 {
     //Ticket Page
     public function ticket_index() {
 
-        $customers = Customer::with(['DeclaredProducts', 'Ticket'])->has('DeclaredProducts')->get();      
+        $customers = Customer::with(['DeclaredProducts', 'Ticket'])->get();  
 
         // Initialize an empty array to hold the customers and their tickets
         $customer_tickets = [];
@@ -25,13 +27,15 @@ class ticketController extends Controller
         foreach ($customers as $customer) {
             // For each shipping method, add the customer and their ticket to the array
             foreach ($customer->DeclaredProducts->groupBy('shipping_method') as $shipping_method => $products) { 
-                $ticket = $customer->Ticket->where('shipping_method', ucfirst($shipping_method))->first();  
-                $ticket_id = $ticket ? $ticket->ticket_id : null;       
+                $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first(); 
+                $request_method = $customer->Ticket->where('request_method')->first(); 
+                $ticket_id = $ticket ? $ticket->ticket_id : null;   
 
                 $customer_tickets[] = [
                     'customer' => $customer,
                     'ticket_id' => $ticket_id, 
-                    'shipping_method' => $shipping_method
+                    'shipping_method' => $shipping_method,
+                    'request_method' => $request_method
                 ];
             }
         } 
@@ -48,15 +52,19 @@ class ticketController extends Controller
 
         $data = $request->all();
         $shipping_method = $data['shipping_method'];
-        $productIds = $data['product_ids']; // Get the product IDs that are submitted as an array
+        $productIds = $data['product_ids']; // Get the product IDs that are submitted as an array 
 
         try {
 
             // Start a new database transaction
             DB::beginTransaction();
 
-            // Check if a ticket with the given customer_id already exists
-            $existing_ticket = Ticket::where('customer_id', $customer_id)->first();
+            $existing_ticket = Ticket::with([
+                'Customer',
+                'DeclaredProducts',
+                'ticketAdditionalFees',
+                'ticketNotes'
+            ])->where('ticket_id', $ticket_id)->first();  
 
             // Get customer details with products and ticket
             $customer = Customer::with([
@@ -70,14 +78,14 @@ class ticketController extends Controller
 
             // Save generated ticket ID
             $ticket = new Ticket;
-            $ticket->customer_id = $customer->id;
+            $ticket->customer_id = $customer_id;
             $ticket->ticket_id = $ticket_id;
             $ticket->shipping_method = $shipping_method;
             $ticket->save();
 
 
             // Attach product IDs to the ticket
-            $ticket->DeclaredProducts()->attach($productIds); // Assuming you have a many-to-many 
+            $ticket->DeclaredProducts()->attach($productIds); // many to many
 
             // Commit the transaction if no error.
             DB::commit();
@@ -133,53 +141,85 @@ class ticketController extends Controller
 
 
 
-
-
-
-
     //Open Ticket Page
-    public function view_ticket(Request $request, $customer_id, $ticket_id)
-    {
+    public function view_ticket($customer_id, $ticket_id) {
         // Check if a ticket with the given customer_id already exists
-        $existing_ticket = Ticket::where('ticket_id', $ticket_id)->first();
-    
-        // Get customer details with products and ticket
-        $customer = Customer::with([
+        $existing_ticket = Ticket::with([
+            'Customer',
             'DeclaredProducts',
-            'Ticket.ticketAdditionalFees',
-            'Ticket.ticketNotes',
-            'Ticket' // Include the Ticket model
-        ])->find($customer_id);
-    
+            'ticketAdditionalFees',
+            'ticketNotes'
+        ])->where('ticket_id', $ticket_id)->first();  
+
+        // Collect all request_method values into an array
+        $request_methods = $existing_ticket->DeclaredProducts->pluck('request_method')->all();
+        $request_method = implode(',', $request_methods);  
+
         // Get the first ticket (if it exists) from the customer's tickets
-        $firstTicket = $customer->Ticket->first();
+        $firstTicket = $existing_ticket;
     
         // Retrieve all products associated with the specific ticket
-        $products = $firstTicket ? $firstTicket->DeclaredProducts : collect(); // Use collect() to handle empty case
-    
+        $products = $firstTicket ? $firstTicket->DeclaredProducts : collect(); // Use collect() to handle empty case 
         
         if ($existing_ticket) {
             // If a ticket already exists, return the view with the existing ticket_id
-            return view('tickets.view-ticket', [
-                'customer' => $customer,
+            return view('tickets.view-ticket', [ 
                 'ticket_id' => $ticket_id,
                 'firstTicket' => $firstTicket,
                 'notes' => $existing_ticket->ticketNotes,
+                'additonal_fees' => $existing_ticket->ticketAdditionalFees,
                 'existing_ticket' => $existing_ticket,
-                'products' => $products
+                'products' => $products,
+                'request_method' => $request_method 
             ]);
-        }
-    
-        // Otherwise, return the view without an existing ticket
-        return view('tickets.view-ticket', [
-            'customer' => $customer,
-            'ticket_id' => $ticket_id,
-            'firstTicket' => $firstTicket,
-            'notes' => $existing_ticket->ticketNotes,
-            'existing_ticket' => $existing_ticket,
-            'products' => $products
-        ]);
+        } 
     }
+    
+
+
+
+    // //Open Ticket Page
+    // public function view_ticket(Request $request, $customer_id, $ticket_id) {
+    //     // Check if a ticket with the given customer_id already exists
+    //     $existing_ticket = Ticket::where('ticket_id', $ticket_id)->first(); 
+    
+    //     // Get customer details with products and ticket
+    //     $customer = Customer::with([
+    //         'DeclaredProducts',
+    //         'Ticket.ticketAdditionalFees',
+    //         'Ticket.ticketNotes',
+    //         'Ticket' // Include the Ticket model
+    //     ])->find($customer_id);
+    
+    //     // Get the first ticket (if it exists) from the customer's tickets
+    //     $firstTicket = $customer->Ticket->first();
+    
+    //     // Retrieve all products associated with the specific ticket
+    //     $products = $firstTicket ? $firstTicket->DeclaredProducts : collect(); // Use collect() to handle empty case
+    
+        
+    //     if ($existing_ticket) {
+    //         // If a ticket already exists, return the view with the existing ticket_id
+    //         return view('tickets.view-ticket', [
+    //             'customer' => $customer,
+    //             'ticket_id' => $ticket_id,
+    //             'firstTicket' => $firstTicket,
+    //             'notes' => $existing_ticket->ticketNotes,
+    //             'existing_ticket' => $existing_ticket,
+    //             'products' => $products
+    //         ]);
+    //     }
+    
+    //     // Otherwise, return the view without an existing ticket
+    //     return view('tickets.view-ticket', [
+    //         'customer' => $customer,
+    //         'ticket_id' => $ticket_id,
+    //         'firstTicket' => $firstTicket,
+    //         'notes' => $existing_ticket->ticketNotes,
+    //         'existing_ticket' => $existing_ticket,
+    //         'products' => $products
+    //     ]);
+    // }
     
     
 
@@ -203,7 +243,7 @@ class ticketController extends Controller
             ]);
 
             // Get validated data
-            $data = $request->all();
+            $data = $request->all();  
 
             // Create a new product and save it to the database
             $addProduct = new DeclaredProducts;
@@ -212,14 +252,22 @@ class ticketController extends Controller
             $addProduct->product_link = $data['product_link']; 
             $addProduct->product_qty = $data['product_qty'];  
             $addProduct->product_variant = $data['product_variant'];  
-            $addProduct->shipping_method = $data['shipping_method'];  
+            $addProduct->shipping_method = strtolower($data['shipping_method']);  
             $addProduct->request_method = $data['request_method'];  
             $addProduct->save(); // Save the data
+
+            // Attach product IDs to the ticket
+            $ticket = Ticket::where('ticket_id', $data['ticket_id'])->first(); // Get the ticket instance
+            if($ticket) {
+                $ticket->declaredProducts()->attach($addProduct->id); // Attach the product to the ticket
+            }
+
 
             // Commit the transaction
             DB::commit();
 
             return redirect()->back()->with('success', 'Product added successfully'); // Redirect back with a success message
+
 
        } catch (\Throwable $e) {
         
