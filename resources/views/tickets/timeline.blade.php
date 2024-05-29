@@ -74,41 +74,40 @@
                 'products' => $products,
                 'request_method' => $request_method ])
 
-        <p class="mb-2">This is some placeholder content for the Initial Payment tab's associated content. Clicking another
-            tab will toggle the visibility of this one for the next.</p>
-        <p>The tab JavaScript swaps classes to control the content visibility and styling.</p>
+        <p class="mb-2">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
     </div>
     <!-- END - STEP 1: INITIAL PAYMENT -->
 
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden"
         id="step_2_content">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Approve Payment</h3>
-        <p>This is some placeholder content for the Approve Payment tab.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
     </div>
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden"
         id="step_3_content">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Add Pictures</h3>
-        <p>This is some placeholder content for the Add Pictures tab.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
     </div>
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden"
         id="step_4_content">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Shipping Payment</h3>
-        <p>This is some placeholder content for the Shipping Payment tab.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
     </div>
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden"
         id="step_5_content">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Approve Payment</h3>
-        <p>This is some placeholder content for the Approve Payment tab.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
     </div>
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden"
         id="step_6_content">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Tracking</h3>
-        <p>This is some placeholder content for the Tracking tab.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
     </div>
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden"
         id="step_7_content">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">On the way to Customer</h3>
-        <p>This is some placeholder content for the On the way to Customer tab.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
     </div>
 </div>
 
