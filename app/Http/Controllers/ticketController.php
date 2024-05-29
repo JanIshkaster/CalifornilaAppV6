@@ -29,11 +29,11 @@ class ticketController extends Controller
             foreach ($customer->DeclaredProducts->groupBy('shipping_method') as $shipping_method => $products) { 
                 $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first(); 
                 $request_method = $customer->Ticket->where('request_method')->first(); 
-                $ticket_id = $ticket ? $ticket->ticket_id : null;   
+                $ticket_id = $ticket ? $ticket->ticket_id : null; 
 
                 $customer_tickets[] = [
                     'customer' => $customer,
-                    'ticket_id' => $ticket_id, 
+                    'ticket_id' => $ticket_id,  
                     'shipping_method' => $shipping_method,
                     'request_method' => $request_method
                 ];
@@ -167,6 +167,7 @@ class ticketController extends Controller
                 'ticket_id' => $ticket_id,
                 'firstTicket' => $firstTicket,
                 'notes' => $existing_ticket->ticketNotes,
+                'steps' => $existing_ticket->steps,
                 'additonal_fees' => $existing_ticket->ticketAdditionalFees,
                 'existing_ticket' => $existing_ticket,
                 'products' => $products,
@@ -175,55 +176,7 @@ class ticketController extends Controller
         } 
     }
     
-
-
-
-    // //Open Ticket Page
-    // public function view_ticket(Request $request, $customer_id, $ticket_id) {
-    //     // Check if a ticket with the given customer_id already exists
-    //     $existing_ticket = Ticket::where('ticket_id', $ticket_id)->first(); 
-    
-    //     // Get customer details with products and ticket
-    //     $customer = Customer::with([
-    //         'DeclaredProducts',
-    //         'Ticket.ticketAdditionalFees',
-    //         'Ticket.ticketNotes',
-    //         'Ticket' // Include the Ticket model
-    //     ])->find($customer_id);
-    
-    //     // Get the first ticket (if it exists) from the customer's tickets
-    //     $firstTicket = $customer->Ticket->first();
-    
-    //     // Retrieve all products associated with the specific ticket
-    //     $products = $firstTicket ? $firstTicket->DeclaredProducts : collect(); // Use collect() to handle empty case
-    
-        
-    //     if ($existing_ticket) {
-    //         // If a ticket already exists, return the view with the existing ticket_id
-    //         return view('tickets.view-ticket', [
-    //             'customer' => $customer,
-    //             'ticket_id' => $ticket_id,
-    //             'firstTicket' => $firstTicket,
-    //             'notes' => $existing_ticket->ticketNotes,
-    //             'existing_ticket' => $existing_ticket,
-    //             'products' => $products
-    //         ]);
-    //     }
-    
-    //     // Otherwise, return the view without an existing ticket
-    //     return view('tickets.view-ticket', [
-    //         'customer' => $customer,
-    //         'ticket_id' => $ticket_id,
-    //         'firstTicket' => $firstTicket,
-    //         'notes' => $existing_ticket->ticketNotes,
-    //         'existing_ticket' => $existing_ticket,
-    //         'products' => $products
-    //     ]);
-    // }
-    
-    
-
-
+  
     //Add products - Ticket Page
     public function addProducts(Request $request, $customer_id){ 
 
@@ -297,5 +250,17 @@ class ticketController extends Controller
         return redirect()->back()->with('success', 'Product deleted successfully.'); 
  
      }
+
+
+
+     //Initial Payment - STEP 1
+     public function initialPayment($customer_id, $ticket_id){
+
+
+        return redirect()->back()->with('success', 'Product for payment created successfully.'); 
+     }
+
+
+
     
 }

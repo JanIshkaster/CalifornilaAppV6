@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('customer_id'); // Add this line
             $table->string('ticket_id', 50)->unique();
-            $table->string('steps')->nullable();
+            $table->integer('steps')->default(1); // Set default value to Step 1
             $table->string('shipping_method')->nullable();
             $table->string('status')->nullable();
             $table->string('tracking')->nullable();
