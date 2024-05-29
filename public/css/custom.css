@@ -269,3 +269,53 @@ input#amount {
     border-radius: 0 0.375rem 0.375rem 0 !important;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; 
 }
+
+#timeline a.tab-link.active {
+    color: #fff !important;
+    background-color: #2563eb !important;
+}
+
+#timeline a.active div.title span.step-number {
+    background: #2563eb; 
+    border-color:#ffc107;
+}
+#timeline div.title span.step-number { 
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    margin-right: 15px;
+    border: 5px solid #d2d2d294;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 50%;
+    position: relative;
+}
+#timeline div.title {
+    display: flex;
+    align-items: center;
+}
+#timeline ul li:after {
+    position: absolute;
+    content: '';
+    width: 3px;
+    height: 30px;
+    background: #c1c1c1a8;
+    left: 50%;
+    top: 125%;
+    -moz-transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    z-index: 9;
+    display: block;
+}
+
+#timeline ul li:last-child:after {
+    display:none;
+}
+
+#timeline ul li {
+    position: relative;
+    z-index: 999;
+    margin-bottom: 30px;
+}

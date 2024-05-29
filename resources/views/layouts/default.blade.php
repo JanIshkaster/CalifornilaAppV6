@@ -42,15 +42,12 @@
                 @endif
 
 
-                <div class="container h-full flex flex-row max-w-full p-0 h-dvh">
-
-
-
+                <div class="container h-full flex flex-row max-w-full p-0"> 
                     {{-- SIDEBAR --}}
                     <x-sidebar-menu />
 
                     {{-- START - PAGE ~ CONTENT --}}
-                    <div class="content_container w-full p-5">
+                    <div class="content_container w-full p-5 h-full">
                         @if (Breadcrumbs::exists())
                             {!! Breadcrumbs::render() !!}
                         @endif

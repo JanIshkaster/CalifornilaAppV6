@@ -64,12 +64,6 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    
-                                    @php
-                                        echo '<p>Customer Name: ' .  $customer_ticket['customer']->first_name . '</p>'; 
-                                        echo '<p>Shipping Method: ' .  $customer_ticket['shipping_method'] . '</p>'; 
-                                        echo '<p>Ticket ID: ' .  $customer_ticket['ticket_id'] . '</p>'; 
-                                    @endphp
 
                                     @if ($customer_ticket['ticket_id'])
                                         <a class="btn btn-success w-full" 
