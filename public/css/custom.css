@@ -319,3 +319,6 @@ input#amount {
     z-index: 999;
     margin-bottom: 30px;
 }
+button.clear_estimate.disabled{
+    display:none;
+}
