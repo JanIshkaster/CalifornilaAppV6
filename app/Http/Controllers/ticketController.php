@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Ticket;
 use App\Models\ticketAdditionalFees;
+use App\Models\ticketPayments;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
@@ -18,30 +19,46 @@ class ticketController extends Controller
 {
     //Ticket Page
     public function ticket_index() {
-
         $customers = Customer::with(['DeclaredProducts', 'Ticket'])->get();  
-
+    
         // Initialize an empty array to hold the customers and their tickets
         $customer_tickets = [];
-    
+        
         foreach ($customers as $customer) {
-            // For each shipping method, add the customer and their ticket to the array
-            foreach ($customer->DeclaredProducts->groupBy('shipping_method') as $shipping_method => $products) { 
-                $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first(); 
-                $request_method = $customer->Ticket->where('request_method')->first(); 
-                $ticket_id = $ticket ? $ticket->ticket_id : null; 
+            // Group declared products by both shipping_method and request_method
+            $groupedProducts = $customer->DeclaredProducts->groupBy(['shipping_method', 'request_method']);
+            
+            foreach ($groupedProducts as $shipping_method => $requestMethods) {
+                foreach ($requestMethods as $request_method => $products) {
+                    // Find the ticket for the specific shipping method
+                    $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first();  
+                    $ticket_id = $ticket ? $ticket->ticket_id : null;   
+                    $order_id = $ticket ? $ticket->order_id : null;  // Fetch order_id from the ticket
+                    $status = $ticket ? $ticket->status : null;  // Fetch status from the ticket
 
-                $customer_tickets[] = [
-                    'customer' => $customer,
-                    'ticket_id' => $ticket_id,  
-                    'shipping_method' => $shipping_method,
-                    'request_method' => $request_method
-                ];
+                    $customer_tickets[] = [
+                        'customer' => $customer,
+                        'customer_shopify_id' => $customer->customer_id,
+                        'ticket_id' => $ticket_id,  
+                        'products' => $products,
+                        'shipping_method' => $shipping_method,
+                        'request_method' => $request_method,
+                        'order_id' => $order_id,
+                        'status' => $status,
+                        'created_at' => $products->min('created_at') // Get the earliest creation date for sorting
+                    ];
+                }
             }
         } 
-    
+        
+        // Sort the customer tickets by the created_at field
+        usort($customer_tickets, function($a, $b) {
+            return $a['created_at'] <=> $b['created_at'];
+        });
+
         return view('tickets.ticket_index', ['customer_tickets' => $customer_tickets, 'customers' => $customers]);
     }
+    
     
 
     
@@ -50,8 +67,10 @@ class ticketController extends Controller
     //Assign Ticket Page
     public function assign_ticket(Request $request, $customer_id, $ticket_id){ 
 
-        $data = $request->all();
+        $data = $request->all();  
         $shipping_method = $data['shipping_method'];
+        $order_id = $data['order_id'];
+        $request_method = $data['request_method'];
         $productIds = $data['product_ids']; // Get the product IDs that are submitted as an array 
 
         try {
@@ -79,7 +98,9 @@ class ticketController extends Controller
             // Save generated ticket ID
             $ticket = new Ticket;
             $ticket->customer_id = $customer_id;
+            $ticket->order_id = $order_id;
             $ticket->ticket_id = $ticket_id;
+            $ticket->request_method = $request_method;
             $ticket->shipping_method = $shipping_method;
             $ticket->save();
 
@@ -148,7 +169,8 @@ class ticketController extends Controller
             'Customer',
             'DeclaredProducts',
             'ticketAdditionalFees',
-            'ticketNotes'
+            'ticketNotes',
+            'ticketPayments'
         ])->where('ticket_id', $ticket_id)->first();  
 
         // Collect all request_method values into an array
@@ -171,7 +193,8 @@ class ticketController extends Controller
                 'additonal_fees' => $existing_ticket->ticketAdditionalFees,
                 'existing_ticket' => $existing_ticket,
                 'products' => $products,
-                'request_method' => $request_method 
+                'request_method' => $request_method, 
+                'ticketPayments' => $existing_ticket->ticketPayments
             ]);
         } 
     }

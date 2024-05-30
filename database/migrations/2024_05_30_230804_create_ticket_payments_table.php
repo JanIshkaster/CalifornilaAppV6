@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ticket_additional_fees', function (Blueprint $table) {
+        Schema::create('ticket_payments', function (Blueprint $table) {
             $table->id();
             $table->string('ticket_id', 50);
-            $table->decimal('amount', 8, 2);
-            $table->string('fee_data_details', 100)->nullable();
+            $table->decimal('product_price', 8, 2);
+            $table->string('payment_type', 100)->nullable();
             $table->timestamps();
         
             $table->foreign('ticket_id')->references('ticket_id')->on('tickets')->onDelete('cascade');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ticket_additional_fees');
+        Schema::dropIfExists('ticket_payments');
     }
 };

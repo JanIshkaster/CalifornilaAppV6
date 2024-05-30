@@ -142,7 +142,7 @@ class CustomersController extends Controller
     // Customer consolidate page
     public function customerConsolidate($id){
         $customer_id = $id; 
-        $customerProduct = CustomerAddedProduct::where('customer_id', $customer_id)->get(); 
+        $customerProduct = CustomerAddedProduct::where('customer_id', $customer_id)->get();  
         return view('customers.customerConsolidate', ['customerProduct' => $customerProduct]);
     }
 

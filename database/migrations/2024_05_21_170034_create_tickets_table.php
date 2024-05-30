@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('customer_id'); // Add this line
             $table->string('ticket_id', 50)->unique();
+            $table->string('order_id', 50)->nullable();
             $table->integer('steps')->default(1); // Set default value to Step 1
             $table->string('shipping_method')->nullable();
-            $table->string('status')->nullable();
+            $table->string('request_method')->nullable();
+            $table->string('status')->default('forReview');
             $table->string('tracking')->nullable();
             $table->timestamps();
 
