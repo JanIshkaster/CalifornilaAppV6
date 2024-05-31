@@ -14,7 +14,12 @@ return new class extends Migration
         Schema::create('ticket_payments', function (Blueprint $table) {
             $table->id();
             $table->string('ticket_id', 50);
-            $table->decimal('product_price', 8, 2);
+            $table->decimal('total_handling_fee', 8, 2);
+            $table->decimal('total_custom_tax', 8, 2);
+            $table->decimal('total_convenience_fee', 8, 2);
+            $table->decimal('total_credit_card_fee', 8, 2);
+            $table->decimal('total_product_value', 8, 2);
+            $table->decimal('total_product_price', 8, 2);
             $table->string('payment_type', 100)->nullable();
             $table->timestamps();
         

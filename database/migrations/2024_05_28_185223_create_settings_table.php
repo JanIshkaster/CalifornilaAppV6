@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->integer('handling_fee')->nullable();
-            $table->integer('custom_tax')->nullable();
-            $table->integer('convenience_fee')->nullable();
-            $table->integer('credit_card_fee')->nullable();
-            $table->integer('dollar_conversion')->nullable();
+            $table->decimal('handling_fee', 8, 2)->nullable();
+            $table->decimal('custom_tax', 8, 2)->nullable();
+            $table->decimal('convenience_fee', 8, 2)->nullable();
+            $table->decimal('credit_card_fee', 8, 2)->nullable();
+            $table->decimal('dollar_conversion', 8, 2)->nullable();
             $table->string('admin_emails')->nullable();
             $table->timestamps();
         });

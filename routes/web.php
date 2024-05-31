@@ -56,6 +56,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/store_add_fee', [ticketAddFeeController::class, 'store_add_fee'])->name('store_add_fee'); // STORE ADDITONAL FEE
     Route::post('/ticket/view-ticket/{customer_id}/add_product', [ticketController::class, 'addProducts'])->name('addProducts'); // ADD PRODUCT - TICKET PAGE
     Route::delete('/ticket/view-ticket/{customer_id}/delete_product/{product_id}', [ticketController::class, 'deleteProducts'])->name('deleteProducts'); // DELETE PRODUCT - TICKET PAGE
+
+    //TICKETS PAGE - TIMELINE STEPS
+    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/initialPayment', [ticketController::class, 'initialPayment'])->name('initialPayment'); // STORE and PROCESS INITIAL PAYMENT
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');

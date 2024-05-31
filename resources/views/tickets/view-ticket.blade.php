@@ -365,17 +365,21 @@
 
     </div>
     
+    
     <div class="container flex flex-row max-w-full">
         {{-- START - TIMELINE --}}
         @include('tickets.timeline', 
                 ['ticket_id' => $ticket_id,
+                'customer_id' => $customer_id,
                 'firstTicket' => $firstTicket,
                 'notes' => $existing_ticket->ticketNotes,
                 'steps' => $existing_ticket->steps,
                 'additonal_fees' => $existing_ticket->ticketAdditionalFees,
                 'existing_ticket' => $existing_ticket,
                 'products' => $products,
+                'status' => $existing_ticket->status,
                 'request_method' => $request_method, 
+                'admin_settings' => $admin_settings,
                 'ticketPayments' => $existing_ticket->ticketPayments ]);
         {{-- END - TIMELINE --}}
     </div>

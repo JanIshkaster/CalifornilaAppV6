@@ -11,7 +11,12 @@ class ticketPayments extends Model
 
     protected $fillable = [
         'ticket_id', 
-        'product_price', 
+        'total_handling_fee',
+        'total_custom_tax',
+        'total_convenience_fee',
+        'total_credit_card_fee',
+        'total_product_value',
+        'total_product_price', 
         'payment_type'
     ];
 

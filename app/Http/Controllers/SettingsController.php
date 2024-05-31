@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller
@@ -12,18 +13,14 @@ class SettingsController extends Controller
     // SETTINGS PAGE VIEW
     public function settings(){ 
 
-        $adminSettings = Settings::all();
+        $adminSettings = Settings::first();
 
         return view('settings', ['adminSettings' => $adminSettings]);
     } 
     
-    // SETTINGS FORM 
-    public function settings_form(Request $request){
+    // SETTINGS FORM
+    public function settings_form(Request $request) {  
         try {
-
-            // Start a database transaction
-            DB::beginTransaction(); 
-
             // Validate the incoming request...
             $validatedData = $request->validate([
                 'handling_fee' => 'nullable|numeric|min:0',
@@ -32,26 +29,39 @@ class SettingsController extends Controller
                 'credit_card_fee' => 'nullable|numeric|min:0',
                 'dollar_conversion' => 'nullable|numeric|min:0',
                 'admin_emails' => 'required|email',
-            ]); 
+            ]);
 
-            // Save data
-            Settings::create($validatedData);
-            
+            // Start a database transaction
+            DB::beginTransaction();
+
+            // Find or create a Settings record based on admin_emails
+            $settings = Settings::updateOrCreate(
+                ['admin_emails' => $validatedData['admin_emails']],
+                $validatedData
+            );
+
             // Commit the transaction if everything is successful
             DB::commit();
-    
+
+            // Redirect back with success message
             return redirect()->back()->with('success', 'Settings saved successfully.');
         } catch (ValidationException $e) {
-            // Redirect back with validation errors if validation fails
+            // Rollback the transaction on any other exception
+             DB::rollback();
+
+            // Log validation errors
+            Log::error('Validation errors', ['errors' => $e->validator->errors()]);
             return redirect()->back()->withErrors($e->validator->errors());
         } catch (\Exception $e) {
             // Rollback the transaction on any other exception
             DB::rollback();
-            
-            // Handle or log the exception as needed
+
+            // Log other exceptions
+            Log::error('An error occurred', ['exception' => $e]);
             return redirect()->back()->with('error', 'An error occurred. Please try again.');
         }
     }
+
     
 
 }
