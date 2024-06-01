@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\ticketNotes;
 use App\Models\ticketProofOfPayment;
 use App\Models\ticketAdditionalFees;
+use App\Models\ticketPayments;
 
 class Ticket extends Model
 {
@@ -16,8 +17,10 @@ class Ticket extends Model
     protected $fillable = [
         'customer_id',
         'ticket_id',
+        'order_id',
         'steps',
         'shipping_method',
+        'request_method',
         'status',
         'tracking' 
     ];
@@ -37,6 +40,10 @@ class Ticket extends Model
 
     public function ticketAdditionalFees(){
         return $this->hasMany(ticketAdditionalFees::class, 'ticket_id', 'ticket_id');
+    }
+
+    public function ticketPayments(){
+        return $this->hasMany(ticketPayments::class, 'ticket_id', 'ticket_id');
     }
 
     public function DeclaredProducts(){

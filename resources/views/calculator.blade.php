@@ -292,6 +292,7 @@
                     if (outputCalculator.innerHTML.trim() !== '') {
                         printButton.removeAttribute('disabled'); // Enable the print button if output is displayed
                         clearButton.removeAttribute('disabled'); // Enable the clear button if output is displayed
+                        getEstimateButton.setAttribute('disabled', 'true'); 
                     }
 
                     }, 500); // Simulated delay of 1 second 
@@ -307,10 +308,18 @@
             const clearButton = document.querySelector('.clear_estimate'); //GET CLEAR BUTTON
             const outputCalculator = document.querySelector('.output-calculator'); //GET OUTPUT
             const printButton = document.getElementById('printButton'); // GET BUTTON
+            const inputFields = document.querySelectorAll('#calculatorPage input'); //GET INPUT FIELDS
+            const getEstimateButton = document.querySelector('.get_estimate'); // GET ESTIMATE BUTTON
 
+            // Clear fields and output if clear button is clicked
             clearButton.addEventListener('click', () => {
                 // Clear the content of the output calculator
                 outputCalculator.innerHTML = '';
+
+                // Clear the input field
+                inputFields.forEach(input => {
+                    input.value = ''; 
+                });
 
                 //Disable the print and clear button
                 clearButton.setAttribute('disabled', 'true'); 
@@ -332,10 +341,7 @@
                 printWindow.print();
             }
 
- 
-            const inputFields = document.querySelectorAll('#calculatorPage input');
-            const getEstimateButton = document.querySelector('.get_estimate');
-
+            //Enable the get estimate button if input fields are filled
             inputFields.forEach(input => {
                 input.addEventListener('change', function() {
                     getEstimateButton.removeAttribute('disabled');

@@ -1,21 +1,7 @@
 <fieldset id="step-1" role="tabpanel" aria-labelledby="steps-uid-0-h-1" class="body" aria-hidden="true"> 
-    <form method="POST" id="request_declared_value" class="signup-form" action="#" novalidate="novalidate">
-
-        @php
-            // Split the string into an array using the comma as the delimiter
-            $request_method_array = explode(',', $request_method);
-        
-            // Now you have $request_method_array as an array
-            // You can use it as needed, for example, to remove duplicates
-            $unique_request_method = array_unique($request_method_array);
-        
-            // Now you can implode the unique array if needed
-            $r_method = implode(',', $unique_request_method);
-        @endphp
-        
-        <h2 class="text-white mb-2 font-bold">
-            {{ ucfirst(strtolower($r_method)) == 'Request_estimates' ? 'Request Estimate' : 'Declared Estimate' }} value
-        </h2>
+    <form method="POST" id="declaredProductEstimateForm" 
+            action="{{ route('initialPayment', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}">
+        @csrf
     
         <p class="desc">Add value to the request or declared </p>
 
@@ -48,10 +34,179 @@
                     No data
                 @endforelse 
 
-        </table>
+        </table> 
+
+        @switch($request_method)
+            @case('REQUEST_ESTIMATES')
+                    <div class="fieldset-content" id="initial_payment_form_container">  
 
 
+                        @if ($ticketPayments && $ticketPayments->first() && $ticketPayments->first()->ticket_id)
+                        <div class="form-group w-full mt-3 mb-3">
+                            <label for="find_bank" class="form-label">Product Value</label> 
+                        </div>
+                        <div class="requested_data_container">
+                            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-4 mb-4">
+                                <thead class="text-xs text-white uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">Handling Fee {{ $admin_settings->handling_fee }}%</th>
+                                        <th scope="col" class="px-6 py-3">Customs Tax {{ $admin_settings->custom_tax }}%</th>
+                                        <th scope="col" class="px-6 py-3">Convenience Fee {{ $admin_settings->convenience_fee }}%</th>
+                                        <th scope="col" class="px-6 py-3">Credit card Fee {{ $admin_settings->credit_card_fee }}%</th>
+                                        <th scope="col" class="px-6 py-3">Product Value</th>  
+                                        <th scope="col" class="px-6 py-3">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <td class="px-6 py-4">₱ {{$ticketPayments->first()->total_handling_fee ?? '' }}</td>
+                                        <td class="px-6 py-4">₱ {{$ticketPayments->first()->total_custom_tax ?? '' }}</td>
+                                        <td class="px-6 py-4">₱ {{$ticketPayments->first()->total_convenience_fee ?? '' }}</td>
+                                        <td class="px-6 py-4">₱ {{$ticketPayments->first()->total_credit_card_fee ?? '' }}</td>
+                                        <td class="px-6 py-4">₱ {{$ticketPayments->first()->total_product_value ?? '' }}</td>
+                                        <td class="px-6 py-4 text-white font-bold">₱ {{$ticketPayments->first()->total_product_price ?? '' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    @else
+
+                        <div class="form-group w-full mt-3 mb-3">
+                            <label for="find_bank" class="form-label">Product Value</label> 
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-e-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+                                    $
+                                </span>
+                                <input type="number" step="0.01" value="" name="converted_product_value" class="converted_product_value rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            </div>
+                        </div>
+                        <input type="hidden" value="{{ $steps }}" name="steps" class="steps"> 
+                        <input type="hidden" value="{{ $ticket_id }}" name="ticket_id" class="ticket_id"> 
+                        <input type="hidden" value="{{ $request_method }}" name="request_type" class="request_type">
+                        <input type="hidden" value="{{ $status }}" name="status" class="status">
+
+                        {{-- ADMIN SETTINGS -> FEE --}}
+                        <input type="hidden" value="{{ $product->product_qty ?? '' }}" name="product_qty" class="product_qty">
+                        <input type="hidden" value="{{ $admin_settings->handling_fee ?? '' }}" name="handling_fee" class="handling_fee">
+                        <input type="hidden" value="{{ $admin_settings->custom_tax ?? '' }}" name="custom_tax" class="custom_tax">
+                        <input type="hidden" value="{{ $admin_settings->convenience_fee ?? '' }}" name="convenience_fee" class="convenience_fee">
+                        <input type="hidden" value="{{ $admin_settings->credit_card_fee ?? '' }}" name="credit_card_fee" class="credit_card_fee">
+                        <input type="hidden" value="{{ $admin_settings->dollar_conversion ?? '' }}" name="dollar_conversion" class="dollar_conversion">      
+                        
+                        {{-- CALCULATED PRODUCT --}}   
+                        <input type="hidden" name="totalHandlingFee" class="totalHandlingFee" value="">
+                        <input type="hidden" name="totalCustomTax" class="totalCustomTax" value="">
+                        <input type="hidden" name="totalConvenienceFee" class="totalConvenienceFee" value="">
+                        <input type="hidden" name="totalCreditCardFee" class="totalCreditCardFee" value=""> 
+                        <input type="hidden" name="productValue" class="productValue" value=""> 
+                        <input type="hidden" value="" name="productTotalValue" class="productTotalValue"> 
+                        <input type="hidden" value="initial payment" name="payment_type" class="payment_type"> 
+
+                        {{-- DISPLAY OUTPUT --}}
+                        <div class="output_declared_data_initial_payment">
+                            
+                        </div>
+
+                        <button type="submit" class="btn btn-primary declared_value_btn w-full m-0"  disabled>Submit</button> 
+
+                    @endif
+ 
+                    </div>
+                @break
+        
+            @case('DECLARE_SHIPMENTS')
+                {{-- Your DECLARE_SHIPMENTS code here --}}
+                @break
+        
+            @default
+                {{-- Your default code here --}}
+        @endswitch
+    
 
 
     </form>
+
+    
+
+
+
+    <p class="mb-2">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
 </fieldset>
+
+<script>
+    // INITIAL PAYMENT - COMPUTATION
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const convertedProductValues = document.querySelectorAll('#initial_payment_form_container .converted_product_value'); // GET INPUT FIELDS
+        const declaredValueBtns = document.querySelectorAll('.declared_value_btn'); // GET SUBMIT BUTTONS
+
+        // CHECK IF ELEMENTS EXIST
+        if (convertedProductValues.length && declaredValueBtns.length) {
+            // ITERATE OVER EACH INPUT FIELD
+            convertedProductValues.forEach(function(convertedProductValue) {
+                // ADD EVENT LISTENER TO EACH INPUT FIELD
+                convertedProductValue.addEventListener('change', function() {
+                    // ITERATE OVER EACH BUTTON
+                    declaredValueBtns.forEach(function(declaredValueBtn) {
+                        // REMOVE DISABLED ATTRIBUTE FROM EACH BUTTON
+                        declaredValueBtn.removeAttribute('disabled');
+                        declared_value();
+                    });
+                });
+            });
+        }
+
+        // Generate table
+        function declared_value() {
+            const productValue = parseFloat(document.querySelector('.converted_product_value').value * document.querySelector('.dollar_conversion').value);
+            const productQty = parseFloat(document.querySelector('.product_qty').value);
+            const dollar_conversion = parseFloat(document.querySelector('.dollar_conversion').value);
+            const totalHandlingFee = ((productValue / 100) * parseFloat(document.querySelector('.handling_fee').value));
+            const totalCustomTax = ((productValue / 100) * parseFloat(document.querySelector('.custom_tax').value));
+            const totalConvenienceFee = ((productValue / 100) * parseFloat(document.querySelector('.convenience_fee').value));
+            const totalCreditCardFee = ((productValue / 100) * parseFloat(document.querySelector('.credit_card_fee').value));
+            const productTotalValue = (productQty * productValue) + totalHandlingFee + totalCustomTax + totalConvenienceFee + totalCreditCardFee;
+
+            // PUT VALUES IN THE HIDDEN INPUT
+            document.querySelector('.totalHandlingFee').value = totalHandlingFee; 
+            document.querySelector('.totalCustomTax').value = totalCustomTax; 
+            document.querySelector('.totalConvenienceFee').value = totalConvenienceFee; 
+            document.querySelector('.totalCreditCardFee').value = totalCreditCardFee; 
+            document.querySelector('.productValue').value = productValue; 
+            document.querySelector('.productTotalValue').value = productTotalValue; 
+
+
+
+            var data = '<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-4 mb-4">';
+                data += '   <thead class="text-xs text-white uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">';
+                data += '       <tr>';
+                data += '           <th scope="col" class="px-6 py-3">Handling Fee ('+ document.querySelector('.handling_fee').value +'%)</th>';
+                data += '           <th scope="col" class="px-6 py-3">Customs Tax ('+ document.querySelector('.custom_tax').value +'%)</th>';
+                data += '           <th scope="col" class="px-6 py-3">Convenience Fee ('+ document.querySelector('.convenience_fee').value +'%)</th>';
+                data += '           <th scope="col" class="px-6 py-3">Credit card Fee ('+ document.querySelector('.credit_card_fee').value +'%)</th>';
+                data += '           <th scope="col" class="px-6 py-3">Product Value</th>';  
+                data += '           <th scope="col" class="px-6 py-3">Total</th>';
+                data += '       </tr>';
+                data += '   </thead>';
+                data += '   <tbody>';
+                data += '       <tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">';
+                data += '           <td class="px-6 py-4">₱ ' + totalHandlingFee.toFixed(2) + '</td>';
+                data += '           <td class="px-6 py-4">₱ ' + totalCustomTax.toFixed(2) + '</td>';
+                data += '           <td class="px-6 py-4">₱ ' + totalConvenienceFee.toFixed(2) + '</td>';
+                data += '           <td class="px-6 py-4">₱ ' + totalCreditCardFee.toFixed(2) + '</td>';
+                data += '           <td class="px-6 py-4">₱ ' + productValue.toFixed(2) + '</td>';
+                data += '           <td class="px-6 py-4 text-white font-bold">₱ ' + productTotalValue.toFixed(2) + '</td>';
+                data += '       </tr>';
+                data += '   </tbody>';
+                data += '</table>';
+
+            document.querySelector('.output_declared_data_initial_payment').innerHTML = data; 
+        }
+
+
+    });
+
+
+</script>

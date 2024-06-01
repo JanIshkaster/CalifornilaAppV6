@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Ticket;
 use App\Models\ticketAdditionalFees;
+use App\Models\ticketPayments;
+use App\Models\Settings;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
@@ -18,30 +20,46 @@ class ticketController extends Controller
 {
     //Ticket Page
     public function ticket_index() {
-
         $customers = Customer::with(['DeclaredProducts', 'Ticket'])->get();  
-
+    
         // Initialize an empty array to hold the customers and their tickets
         $customer_tickets = [];
-    
+        
         foreach ($customers as $customer) {
-            // For each shipping method, add the customer and their ticket to the array
-            foreach ($customer->DeclaredProducts->groupBy('shipping_method') as $shipping_method => $products) { 
-                $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first(); 
-                $request_method = $customer->Ticket->where('request_method')->first(); 
-                $ticket_id = $ticket ? $ticket->ticket_id : null; 
+            // Group declared products by both shipping_method and request_method
+            $groupedProducts = $customer->DeclaredProducts->groupBy(['shipping_method', 'request_method']);
+            
+            foreach ($groupedProducts as $shipping_method => $requestMethods) {
+                foreach ($requestMethods as $request_method => $products) {
+                    // Find the ticket for the specific shipping method
+                    $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first();  
+                    $ticket_id = $ticket ? $ticket->ticket_id : null;   
+                    $order_id = $ticket ? $ticket->order_id : null;  // Fetch order_id from the ticket
+                    $status = $ticket ? $ticket->status : null;  // Fetch status from the ticket
 
-                $customer_tickets[] = [
-                    'customer' => $customer,
-                    'ticket_id' => $ticket_id,  
-                    'shipping_method' => $shipping_method,
-                    'request_method' => $request_method
-                ];
+                    $customer_tickets[] = [
+                        'customer' => $customer,
+                        'customer_shopify_id' => $customer->customer_id,
+                        'ticket_id' => $ticket_id,  
+                        'products' => $products,
+                        'shipping_method' => $shipping_method,
+                        'request_method' => $request_method,
+                        'order_id' => $order_id,
+                        'status' => $status,
+                        'created_at' => $products->min('created_at') // Get the earliest creation date for sorting
+                    ];
+                }
             }
         } 
-    
+        
+        // Sort the customer tickets by the created_at field
+        usort($customer_tickets, function($a, $b) {
+            return $a['created_at'] <=> $b['created_at'];
+        });
+
         return view('tickets.ticket_index', ['customer_tickets' => $customer_tickets, 'customers' => $customers]);
     }
+    
     
 
     
@@ -50,8 +68,10 @@ class ticketController extends Controller
     //Assign Ticket Page
     public function assign_ticket(Request $request, $customer_id, $ticket_id){ 
 
-        $data = $request->all();
+        $data = $request->all();  
         $shipping_method = $data['shipping_method'];
+        $order_id = $data['order_id'];
+        $request_method = $data['request_method'];
         $productIds = $data['product_ids']; // Get the product IDs that are submitted as an array 
 
         try {
@@ -79,7 +99,9 @@ class ticketController extends Controller
             // Save generated ticket ID
             $ticket = new Ticket;
             $ticket->customer_id = $customer_id;
+            $ticket->order_id = $order_id;
             $ticket->ticket_id = $ticket_id;
+            $ticket->request_method = $request_method;
             $ticket->shipping_method = $shipping_method;
             $ticket->save();
 
@@ -148,7 +170,8 @@ class ticketController extends Controller
             'Customer',
             'DeclaredProducts',
             'ticketAdditionalFees',
-            'ticketNotes'
+            'ticketNotes',
+            'ticketPayments'
         ])->where('ticket_id', $ticket_id)->first();  
 
         // Collect all request_method values into an array
@@ -160,18 +183,24 @@ class ticketController extends Controller
     
         // Retrieve all products associated with the specific ticket
         $products = $firstTicket ? $firstTicket->DeclaredProducts : collect(); // Use collect() to handle empty case 
-        
+
+        $admin_settings = Settings::first();  // Get admin settings
+       
         if ($existing_ticket) {
             // If a ticket already exists, return the view with the existing ticket_id
             return view('tickets.view-ticket', [ 
                 'ticket_id' => $ticket_id,
+                'customer_id' => $customer_id,
                 'firstTicket' => $firstTicket,
                 'notes' => $existing_ticket->ticketNotes,
                 'steps' => $existing_ticket->steps,
                 'additonal_fees' => $existing_ticket->ticketAdditionalFees,
                 'existing_ticket' => $existing_ticket,
                 'products' => $products,
-                'request_method' => $request_method 
+                'status' => $existing_ticket->status,
+                'request_method' => $request_method, 
+                'admin_settings' => $admin_settings,
+                'ticketPayments' => $existing_ticket->ticketPayments->first()
             ]);
         } 
     }
@@ -253,12 +282,59 @@ class ticketController extends Controller
 
 
 
-     //Initial Payment - STEP 1
-     public function initialPayment($customer_id, $ticket_id){
+    // Initial Payment - STEP 1
+    public function initialPayment(Request $request) { 
+        
+        try {
+            // Validate the request
+            $validatedData = $request->validate([
+                'ticket_id' => 'required|string|max:255',
+                'steps' => 'required|integer|min:1',
+                'totalCreditCardFee' => 'required',
+                'totalHandlingFee' => 'required',
+                'totalCustomTax' => 'required',
+                'totalConvenienceFee' => 'required',
+                'productTotalValue' => 'required',
+                'productValue' => 'required',
+                'product_qty' => 'nullable|integer|min:1',
+                'status' => 'nullable|string|max:255',
+                'payment_type' => 'nullable|string|max:255'
+            ]);
 
+            // Start a database transaction
+            DB::beginTransaction();
 
-        return redirect()->back()->with('success', 'Product for payment created successfully.'); 
-     }
+            // Create a new Ticket Payment data and save it to the database
+            $ticketPayment = new TicketPayments($validatedData);
+            $ticketPayment->ticket_id = $validatedData['ticket_id'];
+            $ticketPayment->total_handling_fee = $validatedData['totalHandlingFee'];
+            $ticketPayment->total_custom_tax = $validatedData['totalCustomTax'];
+            $ticketPayment->total_convenience_fee = $validatedData['totalConvenienceFee'];
+            $ticketPayment->total_credit_card_fee = $validatedData['totalCreditCardFee'];
+            $ticketPayment->total_product_value = $validatedData['productValue'];
+            $ticketPayment->total_product_price = $validatedData['productTotalValue'];
+            $ticketPayment->payment_type = $validatedData['payment_type'];
+            $ticketPayment->save();
+
+            // Update Ticket data and save it to the database
+            $ticketUpdate = Ticket::where('ticket_id', $validatedData['ticket_id'])->first();
+            $ticketUpdate->status = 'pendingPayment';
+            $ticketUpdate->steps = 2;
+            $ticketUpdate->save();
+
+            // Commit the transaction
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Product for payment created successfully.');
+        } catch (\Exception $e) {
+            // Handle exceptions (log, rollback, etc.)
+            DB::rollback();
+            Log::error('Error in initialPayment: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred. Please try again later.');
+        }
+    }
+
+    
 
 
 
