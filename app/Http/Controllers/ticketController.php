@@ -12,7 +12,9 @@ use App\Models\Ticket;
 use App\Models\ticketAdditionalFees;
 use App\Models\ticketPayments;
 use App\Models\Settings;
+use App\Models\WebhookData;
 use Illuminate\Support\Str;
+use PHPShopify\ShopifySDK;
 use Illuminate\Http\Request;
 
 
@@ -28,14 +30,14 @@ class ticketController extends Controller
         foreach ($customers as $customer) {
             // Group declared products by both shipping_method and request_method
             $groupedProducts = $customer->DeclaredProducts->groupBy(['shipping_method', 'request_method']);
-            
             foreach ($groupedProducts as $shipping_method => $requestMethods) {
                 foreach ($requestMethods as $request_method => $products) {
                     // Find the ticket for the specific shipping method
-                    $ticket = $customer->Ticket->where('shipping_method', $shipping_method)->first();  
-                    $ticket_id = $ticket ? $ticket->ticket_id : null;   
-                    $order_id = $ticket ? $ticket->order_id : null;  // Fetch order_id from the ticket
-                    $status = $ticket ? $ticket->status : null;  // Fetch status from the ticket
+                    $customer_id = $customer->Ticket->where('shipping_method', $shipping_method)->first();   
+
+                    $ticket_id = $customer_id ? $customer_id->ticket_id : null;   
+                    $order_id = $customer_id ? $customer_id->order_id : null;  // Fetch order_id from the customer_id
+                    $status = $customer_id ? $customer_id->status : null;  // Fetch status from the ticket  
 
                     $customer_tickets[] = [
                         'customer' => $customer,
@@ -164,7 +166,8 @@ class ticketController extends Controller
 
 
     //Open Ticket Page
-    public function view_ticket($customer_id, $ticket_id) {
+    public function view_ticket($customer_id, $ticket_id) { 
+
         // Check if a ticket with the given customer_id already exists
         $existing_ticket = Ticket::with([
             'Customer',
@@ -185,12 +188,15 @@ class ticketController extends Controller
         $products = $firstTicket ? $firstTicket->DeclaredProducts : collect(); // Use collect() to handle empty case 
 
         $admin_settings = Settings::first();  // Get admin settings
+
+        $initialPaymentData = WebhookData::where('ticket_id', $ticket_id)->get(); //get data from webhook - if customer paid the initial payment request 
        
         if ($existing_ticket) {
             // If a ticket already exists, return the view with the existing ticket_id
             return view('tickets.view-ticket', [ 
                 'ticket_id' => $ticket_id,
                 'customer_id' => $customer_id,
+                'customer_fname' => $existing_ticket->Customer->first_name,
                 'firstTicket' => $firstTicket,
                 'notes' => $existing_ticket->ticketNotes,
                 'steps' => $existing_ticket->steps,
@@ -200,7 +206,8 @@ class ticketController extends Controller
                 'status' => $existing_ticket->status,
                 'request_method' => $request_method, 
                 'admin_settings' => $admin_settings,
-                'ticketPayments' => $existing_ticket->ticketPayments->first()
+                'ticketPayments' => $existing_ticket->ticketPayments->first(),
+                'initialPaymentData' => $initialPaymentData
             ]);
         } 
     }
@@ -283,11 +290,12 @@ class ticketController extends Controller
 
 
     // Initial Payment - STEP 1
-    public function initialPayment(Request $request) { 
-        
+    public function initialPayment(Request $request) {   
+
         try {
             // Validate the request
             $validatedData = $request->validate([
+                'customer_id' => 'required|string|max:255',
                 'ticket_id' => 'required|string|max:255',
                 'steps' => 'required|integer|min:1',
                 'totalCreditCardFee' => 'required',
@@ -298,8 +306,10 @@ class ticketController extends Controller
                 'productValue' => 'required',
                 'product_qty' => 'nullable|integer|min:1',
                 'status' => 'nullable|string|max:255',
-                'payment_type' => 'nullable|string|max:255'
+                'payment_type' => 'nullable|string|max:255',
+                'customer_fname' => 'required|string|max:255', 
             ]);
+            
 
             // Start a database transaction
             DB::beginTransaction();
@@ -325,6 +335,67 @@ class ticketController extends Controller
             // Commit the transaction
             DB::commit();
 
+
+
+            //Create product for customer initial payment request
+            $shopify = new ShopifySDK();
+
+            $customerDetails = Customer::where('id', $validatedData['customer_id'])->first(); 
+
+            $productData = [
+                'title' => 'Initial Payment for ' . $validatedData["customer_fname"],
+                'body_html' => 'This is a product for initial payment request for ' . $validatedData["customer_fname"],
+                'variants' => [
+                    [
+                        'price' => $validatedData['productTotalValue'], // Set price based on request
+                        'inventory_management' => 'shopify', // Enable Shopify inventory management
+                        'inventory_policy' => 'deny', // Deny when out of stock
+                        'fulfillment_service' => 'manual', // Manual fulfillment service
+                        'sku' => 'initial-payment-' . $validatedData["customer_id"], // Add a SKU for tracking
+                        'inventory_quantity' => 1, // Set the quantity to 1
+                        'requires_shipping' => false, // No shipping required
+                    ],
+                ],
+                'images' => [
+                    [
+                        'src' => 'https://cdn.shopify.com/s/files/1/0637/7789/8668/files/req_payment.jpg?v=1717450246',
+                    ],
+                ],
+                 
+            ];
+            
+            // Create the product
+            $createdProduct = $shopify->Product->post($productData);
+
+            $collectionId = '302621229228'; //collection ID for "Initial Payment Request"
+
+            // Associate the product with the collection
+            $collectData = [
+                'product_id' => $createdProduct['id'],
+                'collection_id' => $collectionId,
+            ];
+
+            $createdCollect = $shopify->Collect->post($collectData); //Assign the newly created product to "Initial Payment Request" collection
+
+            //Create Order
+            $orderData = [
+                'line_items' => [
+                    [
+                        'variant_id' => $createdProduct['variants'][0]['id'],
+                        'quantity' => 1,
+                    ],
+                ],
+                'customer' => [
+                    'email' => $customerDetails->email, // Customer's email address 
+                ],
+                'financial_status' => 'pending', // Set to 'pending' or 'on_hold'
+                'note' => $validatedData['ticket_id'], // Custom note here | Store the ticket_id here
+            ];
+            
+            $createdOrder = $shopify->Order->post($orderData); //create order for newly added product
+            
+            
+
             return redirect()->back()->with('success', 'Product for payment created successfully.');
         } catch (\Exception $e) {
             // Handle exceptions (log, rollback, etc.)
@@ -334,8 +405,43 @@ class ticketController extends Controller
         }
     }
 
+    // Initial Payment Checker - SHOPIFY WEBHOOK 
+    public function initialPaymentChecker(Request $request) {
+        $data = $request->all();
+        Log::info('Full webhook data:', $data);
     
+        // Extract the customer_id and note (which you use as ticket_id) from the data
+        $customerId = isset($data['customer']['id']) ? $data['customer']['id'] : null;
+        $note = isset($data['note']) ? $data['note'] : 'No note provided';
+    
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+    
+            // Store the data in the database using the model
+            WebhookData::create([
+                'customer_id' => $customerId,
+                'ticket_id' => $note,
+                'data' => json_encode($data),
+            ]);
+    
+            // Commit the transaction
+            DB::commit();
 
+        } catch (\Exception $e) {
+            // Rollback the transaction
+            DB::rollBack();
+    
+            // Log the exception
+            Log::error('Error saving webhook data:', ['exception' => $e]);
+    
+            // Respond with a failure status (4XX or 5XX) to acknowledge the error
+            return response()->json(['success' => false, 'message' => 'Error processing webhook'], 500);
+        }
+    
+        // Respond with a success status (2XX) to acknowledge the webhook
+        return response()->json(['success' => true]);
+    }
 
 
     
