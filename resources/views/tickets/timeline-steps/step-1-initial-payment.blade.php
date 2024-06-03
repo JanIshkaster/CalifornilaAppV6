@@ -36,12 +36,15 @@
 
         </table> 
 
-        @switch($request_method)
-            @case('REQUEST_ESTIMATES')
-                    <div class="fieldset-content" id="initial_payment_form_container">  
+        @php
+            $requestMethod = strtolower($request_method)
+        @endphp
 
-
-                        @if ($ticketPayments && $ticketPayments->first() && $ticketPayments->first()->ticket_id)
+        @switch(true)
+            @case(strpos($requestMethod, 'request') !== false)
+                <div class="fieldset-content" id="initial_payment_form_container">   
+                        
+                    @if ($ticketPayments && $ticketPayments->first() && $ticketPayments->first()->ticket_id)
                         <div class="form-group w-full mt-3 mb-3">
                             <label for="find_bank" class="form-label">Product Value</label> 
                         </div>
@@ -68,6 +71,17 @@
                                     </tr>
                                 </tbody>
                             </table>
+
+                            <div class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert">
+                                <div class="flex">
+                                    <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                    <div>
+                                    <p class="font-bold">Request sent!</p> 
+                                    </div>
+                                </div>
+                            </div>
+
+
                         </div>
 
                     @else
@@ -83,6 +97,8 @@
                         </div>
                         <input type="hidden" value="{{ $steps }}" name="steps" class="steps"> 
                         <input type="hidden" value="{{ $ticket_id }}" name="ticket_id" class="ticket_id"> 
+                        <input type="hidden" value="{{ $customer_id }}" name="customer_id" class="customer_id"> 
+                        <input type="hidden" value="{{ $customer_fname }}" name="customer_fname" class="customer_fname"> 
                         <input type="hidden" value="{{ $request_method }}" name="request_type" class="request_type">
                         <input type="hidden" value="{{ $status }}" name="status" class="status">
 
@@ -110,29 +126,32 @@
 
                         <button type="submit" class="btn btn-primary declared_value_btn w-full m-0"  disabled>Submit</button> 
 
+                        <div class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md mt-4" role="alert">
+                            <div class="flex">
+                                <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                <div>
+                                <p class="font-bold">Send request for payment to customer via email</p>
+                                <p class="text-sm">Automatically generate a product with price base on request in Shopify store for customers to pay</p>
+                                </div>
+                            </div>
+                        </div>
+
                     @endif
  
                     </div>
                 @break
         
-            @case('DECLARE_SHIPMENTS')
+            @case(strpos($requestMethod, 'declared') !== false)
                 {{-- Your DECLARE_SHIPMENTS code here --}}
+                TEST: DECLARED ESTIMATE
                 @break
         
             @default
                 {{-- Your default code here --}}
-        @endswitch
-    
-
+        @endswitch 
 
     </form>
 
-    
-
-
-
-    <p class="mb-2">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
-        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
 </fieldset>
 
 <script>

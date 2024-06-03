@@ -5,6 +5,9 @@
 }
 </style>
 @section('content')
+ 
+ 
+
     <div class="container flex flex-row max-w-full">
 
         {{-- START - ASSIGN TICKET PAGE CONTENT --}}  
@@ -216,7 +219,7 @@
 
                     </p>
                     <p class="mb-2" style="font-size:12px">
-                        CURRENT STEP: <span class="badge text-white bg-green-700" style="font-size:12px"> STEP </span>
+                        CURRENT STEP: <span class="badge text-white bg-green-700" style="font-size:12px" id="current_step"> {{ $steps }} </span>
                     </p>
 
                     @if ($notes->count())
@@ -371,6 +374,7 @@
         @include('tickets.timeline', 
                 ['ticket_id' => $ticket_id,
                 'customer_id' => $customer_id,
+                'customer_fname' => $existing_ticket->Customer->first_name,
                 'firstTicket' => $firstTicket,
                 'notes' => $existing_ticket->ticketNotes,
                 'steps' => $existing_ticket->steps,
@@ -389,9 +393,7 @@
     @parent
 
 
-    <script>
-
- 
+    <script> 
 
         //modal setup
         function modal() {
@@ -502,15 +504,29 @@
  
     const tabs = document.querySelectorAll('.tab-link');
     const tabContents = document.querySelectorAll('.tab-content');
+    const currentStep = {{ $steps }}; // Assuming this is being rendered correctly from your backend
 
-    tabs.forEach(tab => {
+    tabs.forEach(tab => {   
+
+         
+        if(currentStep == tab.getAttribute('data-step')){
+            // Add the active class to the matching tab
+            tab.classList.add('active');
+            tab.style.boxShadow = '0px 0px 10px 6px #15803d';
+            
+            // Show the content corresponding to the matching tab
+            const contentId = tab.id.replace('_tab', '_content');
+            document.getElementById(contentId).classList.remove('hidden');
+        }
+     
+
         tab.addEventListener('click', function(e) {
             e.preventDefault();
 
             // Remove specified classes from all tabs
             tabs.forEach(t => t.classList.remove('active'));
             
-            // Add the active classes to the clicked tab
+            // Add the active class to the clicked tab
             tab.classList.add('active');
 
             // Hide all tab contents
@@ -521,7 +537,8 @@
             document.getElementById(contentId).classList.remove('hidden');
         });
     });
-    
+
+
 </script>
 
 @endsection

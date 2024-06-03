@@ -88,6 +88,9 @@ Route::middleware('auth')->group(function () {
 
     //Get products from Buying Assistance page - californila shopify
     Route::post('/get_declared_products', [formController::class, 'get_declared_products']);
+
+    //Initial Payment Checker - Shopify Webhook
+    Route::any('/initial-payment-checker', [ticketController::class, 'initialPaymentChecker']);
  
 
 require __DIR__.'/auth.php';

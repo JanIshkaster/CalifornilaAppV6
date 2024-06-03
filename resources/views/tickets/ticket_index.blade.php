@@ -82,6 +82,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4"> 
+                                    {{ $customer_ticket['order_id'] }}
                                     @if ($customer_ticket['ticket_id'] && ($customer_ticket['order_id'] == $index + 1))
                                         <a class="btn btn-success w-full"
                                             href="{{ route('view_ticket', ['customer_id' => $customer_ticket['customer']->id, 'ticket_id' => $customer_ticket['ticket_id']]) }}">
@@ -94,12 +95,10 @@
                                             style="display:inline;">
                                             @csrf
 
-                                            <input type="hidden" name="shipping_method"
-                                                value="{{ $customer_ticket['shipping_method'] }}">
+                                            <input type="hidden" name="shipping_method" value="{{ $customer_ticket['shipping_method'] }}">
                                             <input type="hidden" name="request_method" value="{{ $r_method }}">
                                             <input type="hidden" name="order_id" value="{{ $index + 1 }}">
-                                            <input type="hidden" name="customer_name"
-                                                value="{{ $customer_ticket['customer']->first_name }}">
+                                            <input type="hidden" name="customer_name" value="{{ $customer_ticket['customer']->first_name }}">
 
                                             {{-- Add hidden input fields for product IDs --}}
                                             @foreach ($customer_ticket['products'] as $product)
@@ -154,16 +153,7 @@
 
                 </table>
 
-                <!-- Start Pagination -->
-                <div class='pagination-container'>
-                    <nav>
-                        <ul class="pagination">
-                            <!--	Here the JS Function Will Add the Rows -->
-                        </ul>
-                    </nav>
-                </div>
-                <div class="rows_count">Showing 11 to 20 of 91 entries</div>
-
+ 
             </div>
         </div>
 

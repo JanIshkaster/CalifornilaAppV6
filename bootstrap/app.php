@@ -18,7 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'customer_pass_data',// <-- exclude this route for customer profile
             'customer_store_data_update',// <-- exclude this route for customer update profile
             'customer_store_data_update/*',// <-- exclude this route for customer update profile
-            'get_declared_products' // <-- exclude this route for buying assistance
+            'get_declared_products', // <-- exclude this route for buying assistance
+            'initial-payment-checker' // <-- exclude this route for Initial Payment Checker Webhook
         ]); 
         $middleware->append(Cors::class);
     })
