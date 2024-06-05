@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Ticket;
 use App\Models\ticketAdditionalFees;
 use App\Models\ticketPayments;
+use App\Models\ticketProofOfPayment;
 use App\Models\Settings;
 use App\Models\WebhookData;
 use Illuminate\Support\Str;
@@ -174,8 +175,11 @@ class ticketController extends Controller
             'DeclaredProducts',
             'ticketAdditionalFees',
             'ticketNotes',
-            'ticketPayments'
+            'ticketPayments',
+            'ticketProofOfPayment'
         ])->where('ticket_id', $ticket_id)->first();  
+
+        $customerAddress = CustomerAddress::where('customer_id', $customer_id)->first(); 
 
         // Collect all request_method values into an array
         $request_methods = $existing_ticket->DeclaredProducts->pluck('request_method')->all();
@@ -190,7 +194,9 @@ class ticketController extends Controller
         $admin_settings = Settings::first();  // Get admin settings
 
         $initialPaymentData = WebhookData::where('ticket_id', $ticket_id)->get(); //get data from webhook - if customer paid the initial payment request 
-       
+
+        $ticketMedia = ticketProofOfPayment::where('ticket_id', $ticket_id)->get(); //get the images saved in step 3 
+
         if ($existing_ticket) {
             // If a ticket already exists, return the view with the existing ticket_id
             return view('tickets.view-ticket', [ 
@@ -207,7 +213,9 @@ class ticketController extends Controller
                 'request_method' => $request_method, 
                 'admin_settings' => $admin_settings,
                 'ticketPayments' => $existing_ticket->ticketPayments->first(),
-                'initialPaymentData' => $initialPaymentData
+                'initialPaymentData' => $initialPaymentData,
+                'customerAddress' => $customerAddress,
+                'ticketMedia' => $ticketMedia
             ]);
         } 
     }
@@ -289,7 +297,7 @@ class ticketController extends Controller
 
 
 
-    // Initial Payment - STEP 1
+    // STEP 1: Initial Payment 
     public function initialPayment(Request $request) {   
 
         try {
@@ -405,7 +413,7 @@ class ticketController extends Controller
         }
     }
 
-    // Initial Payment Checker - SHOPIFY WEBHOOK 
+    // STEP 2: Initial Payment Checker - SHOPIFY WEBHOOK 
     public function initialPaymentChecker(Request $request) {
         $data = $request->all();
         Log::info('Full webhook data:', $data);
@@ -424,6 +432,10 @@ class ticketController extends Controller
                 'ticket_id' => $note,
                 'data' => json_encode($data),
             ]);
+
+            $ticketUpdate = Ticket::where('ticket_id', $note)->first();
+            $ticketUpdate->status = 'initialPaymentPaid'; 
+            $ticketUpdate->save();
     
             // Commit the transaction
             DB::commit();
@@ -441,6 +453,42 @@ class ticketController extends Controller
     
         // Respond with a success status (2XX) to acknowledge the webhook
         return response()->json(['success' => true]);
+    }
+
+
+    // STEP 3: ADD PROOF/MEDIA/IMAGES
+    public function step_3($customer_id, $ticket_id){ 
+
+        // Save the image path to the database
+        $stepUpdate = Ticket::where('ticket_id', $ticket_id)->first();
+        $stepUpdate->status = 'addingMedia'; //UPDATE STATUS
+        $stepUpdate->steps = 3; //UPDATE STEP
+        $stepUpdate->save();
+   
+        return redirect()->back()->with('success', 'Ticket updated successfully.');
+    }
+
+    // STEP 3: ADD PROOF/MEDIA/IMAGES
+    public function uploadFiles(Request $request, $customer_id, $ticket_id){ 
+
+        $request->validate([ 
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+        ]);
+
+        $image = $request->file('file');
+        $imageName = time().'.'.$image->extension();
+        $path = $image->store('public/images');
+
+        // Remove 'public/' from the path
+        $path = str_replace('public/', '', $path);
+
+        // Save the image path to the database
+        $ticketProofOfPayment = new ticketProofOfPayment();
+        $ticketProofOfPayment->ticket_id = $ticket_id; // Use parameter value
+        $ticketProofOfPayment->image_path = $path; // Save the correct path
+        $ticketProofOfPayment->save();
+   
+        return response()->json(['success'=>$imageName]);
     }
 
 

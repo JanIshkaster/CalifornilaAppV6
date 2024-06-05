@@ -258,12 +258,10 @@ input#amount {
     padding: .375rem .75rem;
     font-size: 1rem;
     font-weight: 400;
-    line-height: 1.5;
-    color: var(--bs-body-color);
+    line-height: 1.5; 
     -webkit-appearance: none;
     -moz-appearance: none;
-    appearance: none;
-    background-color: var(--bs-body-bg);
+    appearance: none; 
     background-clip: padding-box;
     border: var(--bs-border-width) solid var(--bs-border-color);
     border-radius: 0 0.375rem 0.375rem 0 !important;
@@ -321,4 +319,9 @@ input#amount {
 }
 button.clear_estimate.disabled{
     display:none;
+}
+
+.table.ticket_table>:not(caption)>*>* {
+    background: transparent;
+    color: rgb(156 163 175 / var(--tw-text-opacity));
 }

@@ -11,7 +11,7 @@ use App\Http\Controllers\formController;
 use App\Http\Controllers\ticketController;
 use App\Http\Controllers\ticketNoteController;
 use App\Http\Controllers\ticketAddFeeController;
-use App\Http\Controllers\createShopifyProduct;
+use App\Http\Controllers\createShopifyProduct; 
 use Illuminate\Support\Facades\Route;
 use Diglactic\Breadcrumbs\Breadcrumbs;
 use App\Http\Middleware\Cors;
@@ -22,9 +22,10 @@ use PHPShopify\ShopifySDK;
 //     return view('index')->name('home');
 // });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+ 
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -33,7 +34,7 @@ Route::middleware('auth')->group(function () {
 
 
     //HOMEPAGE PAGE
-    Route::get('/', [homeController::class, 'home'])->name('home');
+    Route::get('/', [homeController::class, 'home'])->name('home');  
     
     //PRODUCTS PAGE
     Route::get('/products', [ProductsController::class, 'getProducts'])->name('getProducts');
@@ -59,6 +60,10 @@ Route::middleware('auth')->group(function () {
 
     //TICKETS PAGE - TIMELINE STEPS
     Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/initialPayment', [ticketController::class, 'initialPayment'])->name('initialPayment'); // STORE and PROCESS INITIAL PAYMENT
+
+    // STEP 3: Proceed to controller & Upload files/media
+    Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_3', [ticketController::class, 'step_3'])->name('step_3'); //proceed to step 3
+    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/uploadFiles', [ticketController::class, 'uploadFiles'])->name('uploadFiles'); //Upload files/media controller
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');

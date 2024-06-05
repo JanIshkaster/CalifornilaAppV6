@@ -16,6 +16,14 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Lightbox2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <!-- Lightbox2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
     {{-- Alpine JS --}}
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 
@@ -84,6 +92,29 @@
                 });
         }
     </script>
+ 
+    
+    {{-- DRAG AND DROP UPLOAD IMAGES --}}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.css" rel="stylesheet"> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.js"></script>
+
+    <script type="text/javascript">
+        Dropzone.options.imageUpload = {
+            maxFilesize: 200, // MB
+            acceptedFiles: ".jpeg,.jpg,.png,.gif",
+            init: function() {
+                this.on("success", function(file, response) {
+                    // Log the response to the console
+                    console.log(response);
+                });
+                this.on("error", function(file, response) {
+                    // Handle the error here, e.g., show an error message
+                    console.error(response);
+                });
+            }
+        };
+    </script>
+    {{-- END - DRAG AND DROP UPLOAD IMAGES --}}
 
 </body>
 
