@@ -16,8 +16,8 @@
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id= "table-id">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
-                            <th scope="col" class="px-6 py-3">Order ID</th>
-                            <th scope="col" class="px-6 py-3">Shopify Customer ID</th>
+                            <th scope="col" class="px-6 py-3 hidden">Order ID</th>
+                            <th scope="col" class="px-6 py-3">Customer ID</th>
                             <th scope="col" class="px-6 py-3">Customer Name</th>
                             <th scope="col" class="px-6 py-3">Customer Email</th>
                             <th scope="col" class="px-6 py-3">Product Name/Link</th>
@@ -31,7 +31,7 @@
                         @foreach ($customer_tickets as $index => $customer_ticket)
                             <tr
                                 class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                <td class="px-6 py-4">#{{ $index + 1 }}</td> <!-- Display Order ID as row number -->
+                                <td class="px-6 py-4 hidden">#{{ $index + 1 }}</td> <!-- Display Order ID as row number -->
                                 <td class="px-6 py-4">#{{ $customer_ticket['customer_shopify_id'] ?? '' }}</td>
                                 <td class="px-6 py-4">{{ $customer_ticket['customer']->first_name ?? '' }}
                                     {{ $customer_ticket['customer']->last_name ?? '' }}</td>
@@ -81,8 +81,7 @@
                                         <h3>No data available</h3>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4"> 
-                                    {{ $customer_ticket['order_id'] }}
+                                <td class="px-6 py-4">  
                                     @if ($customer_ticket['ticket_id'] && ($customer_ticket['order_id'] == $index + 1))
                                         <a class="btn btn-success w-full"
                                             href="{{ route('view_ticket', ['customer_id' => $customer_ticket['customer']->id, 'ticket_id' => $customer_ticket['ticket_id']]) }}">
@@ -118,31 +117,41 @@
                                         <span class="mdi me-2 mdi-calculator" aria-hidden="true"></span>
                                         Calculator
                                     </a>
-                                    @switch($customer_ticket['status'])
-                                        @case('forReview')
-                                            <a class="btn btn-secondary w-full" href="">
-                                                <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                For Review
-                                            </a>
-                                            @break
-                                    
-                                        @case('pendingPayment')
-                                            <a class="btn btn-warning w-full" href="">
-                                                <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                Pending Payment
-                                            </a>
-                                            @break
-                                    
-                                        @case('proofAdded')
-                                            <a class="btn btn-success w-full" href="">
-                                                <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                Proof Added
-                                            </a>
-                                            @break
-                                    
-                                        @default
-                                            {{-- Handle default case if needed --}}
-                                    @endswitch
+                                    @if ($customer_ticket['status'] && ($customer_ticket['order_id'] == $index + 1))
+                                        @switch($customer_ticket['status'])
+                                            @case('forReview')
+                                                <a class="btn btn-secondary w-full" href="">
+                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                    For Review
+                                                </a>
+                                                @break
+                                        
+                                            @case('pendingPayment')
+                                                <a class="btn btn-danger w-full" href="">
+                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                    Pending Payment
+                                                </a>
+                                                @break
+                                                
+                                            @case('addingMedia')
+                                                <a class="btn btn-light w-full" href="">
+                                                    <span class="mdi mdi-image-outline"></span>
+                                                    Adding Media/Images
+                                                </a>
+                                                @break
+
+                                            @case('initialPaymentPaid')
+                                                <a class="btn btn-warning w-full" href="">
+                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                    Initial Payment Paid
+                                                </a>
+                                                @break
+                                        
+                                            @default
+                                                {{-- Handle default case if needed --}}
+                                        @endswitch 
+                                    @endif
+
                                 
 
                                 </td>

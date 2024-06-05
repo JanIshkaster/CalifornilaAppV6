@@ -147,9 +147,9 @@
                     <div class="col-md-3">
                         <div class="card">
                             <div class="card-title p-3 mb-0 pb-0">
-                                <p class="d-flex">
+                                <p class="d-flex items-center mb-3">
                                     <i class="mdi me-2 mdi-dropbox"></i> 
-                                    <small>Calculator Playground</small> </span>
+                                    <small class="m-0">Calculator Playground</small> </span>
                                 </p>
                                 <hr />
                             </div>

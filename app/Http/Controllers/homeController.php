@@ -16,4 +16,11 @@ class homeController extends Controller
         $products_count = $shopify->Product->count();  // Get all products from store 
         return view('index', ['customers_count' => $customers_count, 'orders_count' => $orders_count, 'products_count' => $products_count]); 
     }
+
+    public function logout() {
+        auth()->logout();
+        return redirect('/');
+    }
+    
+
 }

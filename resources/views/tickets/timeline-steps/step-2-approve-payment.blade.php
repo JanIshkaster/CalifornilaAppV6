@@ -30,11 +30,32 @@
                 </svg>
                 Confirm order link
             </a>
-            <a href="" target="_blank" class="text-gray bg-yellow-800 hover:bg-yellow-900 focus:ring-4 focus:outline-none focus:ring-yellow-300 
-            font-large rounded-lg text-md px-3 py-1.5 me-2 text-center inline-flex items-center dark:bg-yellow-300 dark:text-gray-800 dark:hover:bg-yellow-400 dark:focus:ring-yellow-800">
+            <a onclick="return confirmProceed();" href="{{ route('step_3', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}"  
+                class="text-gray bg-yellow-800 hover:bg-yellow-900 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-large rounded-lg text-md px-3 py-1.5 me-2 text-center inline-flex items-center dark:bg-yellow-300 dark:text-gray-800 dark:hover:bg-yellow-400 dark:focus:ring-yellow-800">
                 <span class="mdi mdi-page-next" style="margin-right:5px;"></span>
                 Proceed to next step?
             </a>
+                {{-- SWAL FOR PROCEED BUTTON --}}
+                <script>
+                    function confirmProceed() {
+                        Swal.fire({
+                            title: 'Proceed to next step?',
+                            text: 'Are you sure you want to proceed?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes',
+                            cancelButtonText: 'Cancel',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // User clicked "Yes," proceed with the link
+                                window.location.href = '{{ route('step_3', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}';
+                            }
+                        });
+                
+                        // Prevent the default link behavior
+                        return false;
+                    }
+                </script>
             </div>
         </div>
     @else

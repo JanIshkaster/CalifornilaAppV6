@@ -37,7 +37,7 @@ class sendMail extends Mailable
                 </div>
                 <div class="card-body" style="margin-bottom:20px;">
                     <div class="fee_container" style="display: flex; align-items: center;">
-                        <h4 style="margin:0;">Fee:</h4> <span style="margin-left:10px;">' . e($data['amount']) . '</span>
+                        <h4 style="margin:0;">Fee:</h4> <span style="margin-left:10px;">₱ ' . e($data['amount']) . '</span>
                     </div> 
                     <div class="purpose_container" style="display: flex; align-items: center;">
                         <h4 style="margin:0;">Purpose:</h4> <span style="margin-left:10px;">' . e($data['fee_data_details']) . '</span>
