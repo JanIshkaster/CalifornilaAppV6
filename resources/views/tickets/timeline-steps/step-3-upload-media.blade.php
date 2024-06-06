@@ -13,24 +13,104 @@
             </div>
             <div class="col-md-12 mt-4"> 
                 @if ($ticketMedia && $ticketMedia->first()) 
-                    <h1 class="mt-2 mb-4">Uploaded Media:</h1> 
-                    <div class="row"> 
+                    <h1 class="mt-2 mb-3 bold text-xl font-bold text-gray-900 dark:text-white mb-2">Uploaded Media:</h1> 
+                    <div class="row "> 
                         @forelse ($ticketMedia as $image)
-                            <div class="img-container w-1/6 h-full bg-white border rounded-lg p-0 mx-2 my-3">
+                            <div class="img-container w-1/6 h-full bg-white border rounded-lg p-0 mx-2 my-3 relative">
                                 <a href="{{ asset('storage/' . $image->image_path) }}" data-lightbox="uploaded-images">
-                                    <img src="{{ asset('storage/' . $image->image_path) }}" alt="Uploaded Image" style="width:100%;height:220px;object-fit:cover;"> 
+                                    <img src="{{ asset('storage/' . $image->image_path) }}" alt="Uploaded Image" style="width:100%;height:220px;object-fit:cover;">  
                                 </a>
-                            </div> 
+                                <div class="delete-icon absolute top-0 right-0">
+                                    <form id="delete-form-{{ $image->id }}" action="{{ route('deleteFiles', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id, 'media_id' => $image->id]) }}" method="POST" style="display: none;">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                    <button class="btn p-0 m-0 text-xl z-50 text-red-600 hover:text-gray-900" onclick="confirmDeleteMedia(event, '{{ $image->id }}')">
+                                        <span class="mdi mdi-close-box"></span>
+                                    </button>
+                                </div>
+                            </div>
                         @empty
                             <p>No images uploaded yet.</p>
-                        @endforelse
+                        @endforelse 
                     </div>
+                    
+                        <form method="POST" id="comment_submit" action="{{ route('mediaComment', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}">
+                            @csrf 
+                            <input type="hidden" name="customer_first_name" value="{{ $existing_ticket->Customer->first_name }}" /> 
+                            <input type="hidden" name="email_type" value="emailMediaComment" />
+                            
+                            @foreach ($ticketMedia as $image)
+                                <input type="hidden" name="uploaded_images[]" value="{{ $image->image_path }}">
+                            @endforeach
+
+                            <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                                <div class="p-0 bg-white rounded-t-lg dark:bg-gray-800">
+                                    <label for="mediaComment" class="sr-only">Your comment</label>
+                                    <textarea name="mediaComment" id="mediaComment" rows="4" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                                    placeholder="Write a comment..." required ></textarea>
+                                </div>
+                                <div class="flex items-center justify-between px-3 py-2 border-t dark:border-gray-600">
+                                    <button type="submit" class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800">
+                                        Send comment to Customer
+                                    </button> 
+                                </div>
+                            </div>
+                        </form>
+                         
                 @endif
             </div>
-            
+            <a onclick="return confirmProceedStepFour();" href="{{ route('step_4', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}"  
+                class="w-auto mx-2 text-gray bg-yellow-800 hover:bg-yellow-900 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-large rounded-lg text-md px-3 py-1.5 me-2 text-center inline-flex items-center dark:bg-yellow-300 dark:text-gray-800 dark:hover:bg-yellow-400 dark:focus:ring-yellow-800">
+                <span class="mdi mdi-page-next" style="margin-right:5px;"></span>
+                Proceed to next step?
+            </a>
+                {{-- SWAL FOR PROCEED BUTTON --}}
+                <script>
+                    function confirmProceedStepFour() {
+                        Swal.fire({
+                            title: 'Proceed to next step?',
+                            text: 'Are you sure you want to proceed?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes',
+                            cancelButtonText: 'Cancel',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // User clicked "Yes," proceed with the link
+                                window.location.href = '{{ route('step_4', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}';
+                            }
+                        });
+                
+                        // Prevent the default link behavior
+                        return false;
+                    }
+                </script>
         </div>
     </div>
 
 
 </fieldset>
  
+{{-- SWAL CONFIRM FOR DELETE MEDIA --}} 
+<script>
+    function confirmDeleteMedia(event, imageId) {
+        event.preventDefault(); 
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete image!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + imageId).submit();
+            }
+        })
+    }
+ 
+</script>
+
+

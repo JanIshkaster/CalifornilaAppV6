@@ -61,9 +61,14 @@ Route::middleware('auth')->group(function () {
     //TICKETS PAGE - TIMELINE STEPS
     Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/initialPayment', [ticketController::class, 'initialPayment'])->name('initialPayment'); // STORE and PROCESS INITIAL PAYMENT
 
-    // STEP 3: Proceed to controller & Upload files/media
+    // STEP 3: Comment & Upload files/media
     Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_3', [ticketController::class, 'step_3'])->name('step_3'); //proceed to step 3
-    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/uploadFiles', [ticketController::class, 'uploadFiles'])->name('uploadFiles'); //Upload files/media controller
+    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/uploadFiles', [ticketController::class, 'uploadFiles'])->name('uploadFiles'); //Upload files/media 
+    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/mediaComment', [ticketController::class, 'mediaComment'])->name('mediaComment'); //Upload mediaComment 
+    Route::delete('/ticket/view-ticket/{customer_id}/{ticket_id}/deleteFiles/{media_id}', [ticketController::class, 'deleteFiles'])->name('deleteFiles'); //Delete files/media 
+
+    // STEP 4: Shipping payment
+    Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_4', [ticketController::class, 'step_4'])->name('step_4'); //proceed to step 4
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');

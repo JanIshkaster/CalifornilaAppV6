@@ -84,9 +84,14 @@
                                                             </div>
 
                                                             @forelse ($notes as $note)
-                                                                <div class="m-2 text-left d-flex" style="border-top: 1px solid #80808054; padding: 10px;">
-                                                                    <strong>Note#{{ $loop->iteration }}:</strong>
-                                                                    <p class="mx-2">{{ $note->content }}</p>
+                                                                <div class="m-2 text-left d-flex justify-between" style="border-top: 1px solid #80808054; padding: 10px;">
+                                                                    <div class="note-first-col d-flex">
+                                                                        <strong>Note#{{ $loop->iteration }}:</strong>
+                                                                        <p class="mx-2">{{ $note->content }}</p>
+                                                                    </div>
+                                                                    <div class="note-second-col">
+                                                                        <p class="mx-2">{{ date('F d, Y | H:i', strtotime($note->created_at)) }}</p>
+                                                                    </div> 
                                                                 </div>
                                                             @empty
                                                                 No notes added yet
@@ -154,16 +159,15 @@
                                                                 </div>
                                                             </div> 
 
-                                                            @forelse ($additonal_fees as $additonal_fee)
-                                                                <div class="m-2 text-left" style="border-top: 1px solid #80808054; padding: 10px;">
-                                                                    <div class="d-flex">
+                                                            @forelse ($additonal_fees as $additonal_fee) 
+                                                                <div class="m-2 text-left d-flex justify-between" style="border-top: 1px solid #80808054; padding: 10px;">
+                                                                    <div class="note-first-col d-flex">
                                                                         <strong>Additonal Fee#{{ $loop->iteration }}:</strong> 
                                                                         <p class="mx-2">₱ {{ $additonal_fee->amount }}</p>
-                                                                    </div> 
-                                                                    <div class="block">
-                                                                        <p class="mx-2"> - {{ $additonal_fee->fee_data_details }}</p>
                                                                     </div>
-
+                                                                    <div class="note-second-col">
+                                                                        <p class="mx-2">{{ date('F d, Y | H:i', strtotime($additonal_fee->created_at)) }}</p>
+                                                                    </div> 
                                                                 </div>
                                                             @empty
                                                                 No Additional Fee added yet
@@ -311,7 +315,7 @@
         <div class="col-md-5 mx-1">
             <div class="card">
                 <div class="card-header py-1 flex items-center justify-between text-white uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <span class="text-md">List of Products</span>    
+                    <span class="text-md">List of Product(s)</span>    
                     <div x-data="{ open_add_product: false }">
                         <button type="button" class="btn btn-warning my-1 mx-2" style="font-size:14px;"  @click="open_add_product = !open_add_product">
                             Add Product
@@ -598,5 +602,6 @@
 
 
 </script>
+
 
 @endsection
