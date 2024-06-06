@@ -15,6 +15,7 @@ use App\Models\ticketProofOfPayment;
 use App\Models\Settings;
 use App\Models\WebhookData;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 use PHPShopify\ShopifySDK;
 use Illuminate\Http\Request;
 
@@ -456,7 +457,7 @@ class ticketController extends Controller
     }
 
 
-    // STEP 3: ADD PROOF/MEDIA/IMAGES
+    // PROCEED TO STEP 3: ADD PROOF/MEDIA/IMAGES
     public function step_3($customer_id, $ticket_id){ 
 
         // Save the image path to the database
@@ -491,6 +492,85 @@ class ticketController extends Controller
         return response()->json(['success'=>$imageName]);
     }
 
+    // STEP 3: DELETE MEDIA
+    public function deleteFiles($customer_id, $ticket_id, $image_id){
+        
+        try {
+
+            // Assuming you have an 'Image' model with an 'image_path' field
+            $image = ticketProofOfPayment::findOrFail($image_id);
+
+            // Get the full path to the image  
+            $image_path = public_path('storage/' . $image->image_path);
+
+            if (File::exists($image_path)) {
+                // Delete the image file
+                File::delete($image_path);
+
+                // Optionally, update your database to remove the image record
+                $image->delete();
+
+                return redirect()->back()->with('success', 'Image deleted successfully.');
+            } else {
+                return redirect()->back()->with('error', 'Image not found.');
+            }
+
+        } catch (\Exception $e) { 
+
+            // Log the error for debugging purposes
+            Log::error('Error deleting media:', ['exception' => $e]);
+
+            return redirect()->back()->with('error', 'Error deleting image. Please try again later.');
+        }
+
+    }
+
+    // STEP 3: Sending media comment to customer
+    public function mediaComment(Request $request, $customer_id, $ticket_id){
+
+        dd($request);
+        
+        // Validate the request data
+        $request->validate([
+            'mediaComment' => 'required|string|max:1000',
+            'uploaded_images' => 'array',
+            'uploaded_images.*' => 'string|max:255', // Assuming the image paths are stored as strings
+        ]);
+    
+        $comment = $request->input('mediaComment');
+        $uploadedImages = $request->input('uploaded_images', []);
+    
+        // Handle the comment and the uploaded images as needed
+        // Example: Save the comment and associate the uploaded images with the ticket
+    
+        // Assuming you have models for Customer, Ticket, and Media
+        $ticket = Ticket::find($ticket_id);
+        $ticket->comments()->create([
+            'customer_id' => $customer_id,
+            'comment' => $comment,
+            // Add other fields as necessary
+        ]);
+    
+        // If you need to process the uploaded images further, you can do so here
+        foreach ($uploadedImages as $imagePath) {
+            // Process each image path
+        }
+    
+        return redirect()->back()->with('success', 'Comment and media sent successfully!');
+    }
+    
+
+    // PROCEED TO STEP 4: SHIPPING PAYMENT
+    public function step_4($customer_id, $ticket_id){ 
+
+        // Save the image path to the database
+        $stepUpdate = Ticket::where('ticket_id', $ticket_id)->first();
+        $stepUpdate->status = 'addingMedia'; //UPDATE STATUS
+        $stepUpdate->steps = 4; //UPDATE STEP
+        $stepUpdate->save();
+    
+        return redirect()->back()->with('success', 'Ticket updated successfully.');
+    }
 
     
 }
