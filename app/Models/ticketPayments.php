@@ -17,7 +17,8 @@ class ticketPayments extends Model
         'total_credit_card_fee',
         'total_product_value',
         'total_product_price', 
-        'payment_type'
+        'payment_type',
+        'image_path'
     ];
 
     public function ticket()

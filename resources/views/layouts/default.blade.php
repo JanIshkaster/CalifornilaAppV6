@@ -94,27 +94,7 @@
     </script>
  
     
-    {{-- DRAG AND DROP UPLOAD IMAGES --}}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.css" rel="stylesheet"> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.js"></script>
 
-    <script type="text/javascript">
-        Dropzone.options.imageUpload = {
-            maxFilesize: 200, // MB
-            acceptedFiles: ".jpeg,.jpg,.png,.gif",
-            init: function() {
-                this.on("success", function(file, response) {
-                    // Log the response to the console
-                    console.log(response);
-                });
-                this.on("error", function(file, response) {
-                    // Handle the error here, e.g., show an error message
-                    console.error(response);
-                });
-            }
-        };
-    </script>
-    {{-- END - DRAG AND DROP UPLOAD IMAGES --}}
 
 </body>
 

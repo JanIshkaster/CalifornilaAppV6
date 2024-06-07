@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('total_product_value', 8, 2);
             $table->decimal('total_product_price', 8, 2);
             $table->string('payment_type', 100)->nullable();
+            $table->string('image_path')->nullable();
             $table->timestamps();
         
             $table->foreign('ticket_id')->references('ticket_id')->on('tickets')->onDelete('cascade');

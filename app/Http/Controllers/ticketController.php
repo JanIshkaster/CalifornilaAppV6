@@ -16,6 +16,7 @@ use App\Models\Settings;
 use App\Models\WebhookData;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use PHPShopify\ShopifySDK;
 use Illuminate\Http\Request;
 
@@ -299,7 +300,7 @@ class ticketController extends Controller
 
 
     // STEP 1: Initial Payment 
-    public function initialPayment(Request $request) {   
+    public function initialPayment(Request $request) {    
 
         try {
             // Validate the request
@@ -317,8 +318,26 @@ class ticketController extends Controller
                 'status' => 'nullable|string|max:255',
                 'payment_type' => 'nullable|string|max:255',
                 'customer_fname' => 'required|string|max:255', 
+                'requestEstimateFile' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
             ]);
-            
+
+            // Check if the file is uploaded
+            if ($request->hasFile('requestEstimateFile')) {
+                $image = $validatedData['requestEstimateFile'];
+                $imageName = time() . '.' . $image->extension();
+                $path = $image->store('public/images/request-estimate'); 
+
+                // Remove 'public/' from the path
+                $path = str_replace('public/', '', $path);
+
+                // Create a URL for the image
+                $imageUrl = config('app.url') . Storage::url($path);
+                Log::error('image URL: ' . $imageUrl);
+
+            } else {
+                // Handle the case where the file is not uploaded (if needed)
+                $path = null;
+            }
 
             // Start a database transaction
             DB::beginTransaction();
@@ -333,6 +352,7 @@ class ticketController extends Controller
             $ticketPayment->total_product_value = $validatedData['productValue'];
             $ticketPayment->total_product_price = $validatedData['productTotalValue'];
             $ticketPayment->payment_type = $validatedData['payment_type'];
+            $ticketPayment->image_path = $path; //image
             $ticketPayment->save();
 
             // Update Ticket data and save it to the database
@@ -367,7 +387,8 @@ class ticketController extends Controller
                 ],
                 'images' => [
                     [
-                        'src' => 'https://cdn.shopify.com/s/files/1/0637/7789/8668/files/req_payment.jpg?v=1717450246',
+                        // 'src' => 'https://cdn.shopify.com/s/files/1/0637/7789/8668/files/req_payment.jpg?v=1717450246',
+                        'src' => $imageUrl, // Use the uploaded image URL
                     ],
                 ],
                  

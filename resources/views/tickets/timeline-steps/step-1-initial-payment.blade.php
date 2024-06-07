@@ -1,5 +1,5 @@
 <fieldset id="step-1" role="tabpanel" aria-labelledby="steps-uid-0-h-1" class="body" aria-hidden="true"> 
-    <form method="POST" id="declaredProductEstimateForm" 
+    <form method="POST" id="declaredProductEstimateForm" enctype="multipart/form-data"
             action="{{ route('initialPayment', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}">
         @csrf
     
@@ -87,7 +87,7 @@
                     @else
 
                         <div class="form-group w-full mt-3 mb-3">
-                            <label for="find_bank" class="form-label">Product Value</label> 
+                            <label for="find_bank" class="form-label block mb-2 text-md font-medium text-gray-900 dark:text-white">Product Value</label> 
                             <div class="flex">
                                 <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-e-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
                                     $
@@ -123,6 +123,10 @@
                         <div class="output_declared_data_initial_payment">
                             
                         </div>
+
+                        <label class="block mb-2 text-md font-medium text-gray-900 dark:text-white" for="small_size">Attach Estimate Request Image/File</label>
+                        <input class="block w-full mb-5 text-md text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" 
+                        name="requestEstimateFile" id="small_size" type="file" accept="image/*"> 
 
                         <button type="submit" class="btn btn-primary declared_value_btn w-full m-0"  disabled>Submit</button> 
 
