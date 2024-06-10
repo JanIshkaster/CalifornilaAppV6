@@ -121,7 +121,8 @@
                 @include('tickets.timeline-steps.step-3-upload-media', 
                         ['ticket_id' => $ticket_id,
                         'customer_id' => $customer_id, 
-                        'ticketMedia' => $ticketMedia ])
+                        'ticketMedia' => $ticketMedia,
+                        'mediaComments' => $mediaComments ])
 
     </div>
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden" id="step_4_content">

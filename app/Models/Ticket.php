@@ -9,6 +9,7 @@ use App\Models\ticketNotes;
 use App\Models\ticketProofOfPayment;
 use App\Models\ticketAdditionalFees;
 use App\Models\ticketPayments;
+use App\Models\mediaComment;
 
 class Ticket extends Model
 {
@@ -25,13 +26,16 @@ class Ticket extends Model
         'tracking' 
     ];
 
-    public function customer()
-    {
+    public function customer(){
         return $this->belongsTo(Customer::class);
     }
 
     public function ticketNotes(){
         return $this->hasMany(ticketNotes::class, 'ticket_id', 'ticket_id');
+    }
+    
+    public function mediaComment(){
+        return $this->hasMany(mediaComment::class, 'ticket_id', 'ticket_id');
     }
 
     public function ticketProofOfPayment(){
