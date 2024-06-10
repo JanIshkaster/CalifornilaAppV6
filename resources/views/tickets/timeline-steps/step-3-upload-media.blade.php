@@ -47,6 +47,9 @@
                             @csrf 
                             <input type="hidden" name="customer_first_name" value="{{ $existing_ticket->Customer->first_name }}" /> 
                             <input type="hidden" name="email_type" value="emailMediaComment" />
+                            <input type="hidden" value="{{ $ticket_id }}" name="ticket_id" class="ticket_id"> 
+                            <input type="hidden" value="{{ $customer_id }}" name="customer_id" class="customer_id"> 
+                            <input type="hidden" value="{{ $customer_fname }}" name="customer_first_name" class="customer_first_name">
                             
                             @foreach ($ticketMedia as $image)
                                 <input type="hidden" name="uploaded_images[]" value="{{ $image->image_path }}">
@@ -63,6 +66,26 @@
                                         Send comment to Customer
                                     </button> 
                                 </div>
+                                
+                                <h1 class="px-3 py-2 text-xl font-bold mt-4">Comment(s) sent:</h1>
+                                @forelse ($mediaComments as $mediaComment)
+                                    <div class="flex items-center justify-between px-3 py-2 border-t dark:border-gray-600 mt-3 mb-3">
+                                        <div class="mediaComment_first_col">
+                                            <strong>#{{ $loop->iteration }}:</strong> 
+                                            {{ $mediaComment->comment }}
+                                        </div>
+                                        <div class="mediaComment_second_col"> 
+                                            {{ date('F d, Y | H:i', strtotime($mediaComment->created_at)) }}
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="flex items-center justify-between px-3 py-2 border-t dark:border-gray-600 mt-4 mb-4">
+                                        No comment(s) yet
+                                    </div>
+                                @endforelse
+
+
+
                             </div>
                         </form>
                          

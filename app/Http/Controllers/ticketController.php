@@ -14,11 +14,14 @@ use App\Models\ticketPayments;
 use App\Models\ticketProofOfPayment;
 use App\Models\Settings;
 use App\Models\WebhookData;
+use App\Models\mediaComment;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use PHPShopify\ShopifySDK;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\sendMail;
 
 
 class ticketController extends Controller
@@ -198,6 +201,7 @@ class ticketController extends Controller
         $initialPaymentData = WebhookData::where('ticket_id', $ticket_id)->get(); //get data from webhook - if customer paid the initial payment request 
 
         $ticketMedia = ticketProofOfPayment::where('ticket_id', $ticket_id)->get(); //get the images saved in step 3 
+        $mediaComments = mediaComment::where('ticket_id', $ticket_id)->get(); //get all the Media Comments for Step 3
 
         if ($existing_ticket) {
             // If a ticket already exists, return the view with the existing ticket_id
@@ -217,7 +221,8 @@ class ticketController extends Controller
                 'ticketPayments' => $existing_ticket->ticketPayments->first(),
                 'initialPaymentData' => $initialPaymentData,
                 'customerAddress' => $customerAddress,
-                'ticketMedia' => $ticketMedia
+                'ticketMedia' => $ticketMedia,
+                'mediaComments' => $mediaComments
             ]);
         } 
     }
@@ -332,7 +337,7 @@ class ticketController extends Controller
 
                 // Create a URL for the image
                 $imageUrl = config('app.url') . Storage::url($path);
-                Log::error('image URL: ' . $imageUrl);
+                Log::info('image URL: ' . $imageUrl);
 
             } else {
                 // Handle the case where the file is not uploaded (if needed)
@@ -547,39 +552,34 @@ class ticketController extends Controller
     }
 
     // STEP 3: Sending media comment to customer
-    public function mediaComment(Request $request, $customer_id, $ticket_id){
+    public function mediaComment(Request $request, $customer_id, $ticket_id){  
 
-        dd($request);
-        
         // Validate the request data
         $request->validate([
             'mediaComment' => 'required|string|max:1000',
             'uploaded_images' => 'array',
             'uploaded_images.*' => 'string|max:255', // Assuming the image paths are stored as strings
         ]);
+
+        // Get data request
+        $data = $request->all();
     
-        $comment = $request->input('mediaComment');
-        $uploadedImages = $request->input('uploaded_images', []);
+        $comment = $data['mediaComment'];
+        $uploadedImages = $data['uploaded_images'] ?? [];         
     
-        // Handle the comment and the uploaded images as needed
-        // Example: Save the comment and associate the uploaded images with the ticket
-    
-        // Assuming you have models for Customer, Ticket, and Media
-        $ticket = Ticket::find($ticket_id);
-        $ticket->comments()->create([
-            'customer_id' => $customer_id,
-            'comment' => $comment,
-            // Add other fields as necessary
-        ]);
-    
-        // If you need to process the uploaded images further, you can do so here
-        foreach ($uploadedImages as $imagePath) {
-            // Process each image path
-        }
+        // Create a new Media Comment and save it to the database
+        $mediaComment = new mediaComment;
+        $mediaComment->ticket_id = $ticket_id; 
+        $mediaComment->comment = $comment;  
+        $mediaComment->save(); // Save the data 
+
+        // After saving the comment, send the mail to customer
+        $customerEmail = 'jan@ishkaster.com'; // Replace with the customer's email address
+        Mail::to($customerEmail)->send(new sendMail($data));
     
         return redirect()->back()->with('success', 'Comment and media sent successfully!');
     }
-    
+ 
 
     // PROCEED TO STEP 4: SHIPPING PAYMENT
     public function step_4($customer_id, $ticket_id){ 
