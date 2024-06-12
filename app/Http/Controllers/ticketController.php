@@ -12,6 +12,7 @@ use App\Models\Ticket;
 use App\Models\ticketAdditionalFees;
 use App\Models\ticketPayments;
 use App\Models\ticketProofOfPayment;
+use App\Models\ticketShippingPayments;
 use App\Models\Settings;
 use App\Models\WebhookData;
 use App\Models\mediaComment;
@@ -198,10 +199,13 @@ class ticketController extends Controller
 
         $admin_settings = Settings::first();  // Get admin settings
 
-        $initialPaymentData = WebhookData::where('ticket_id', $ticket_id)->get(); //get data from webhook - if customer paid the initial payment request 
+        $WebHookPaymentData = WebhookData::where('ticket_id', $ticket_id)->get(); //get data from webhook - if customer paid the initial payment request 
 
         $ticketMedia = ticketProofOfPayment::where('ticket_id', $ticket_id)->get(); //get the images saved in step 3 
-        $mediaComments = mediaComment::where('ticket_id', $ticket_id)->get(); //get all the Media Comments for Step 3
+        
+        $mediaComments = mediaComment::where('ticket_id', $ticket_id)->get(); //get all the Media Comments for Step 3 
+
+        $ticketShippingPayments = ticketShippingPayments::where('ticket_id', $ticket_id)->get(); //get all the Shipping Payments details - step 4
 
         if ($existing_ticket) {
             // If a ticket already exists, return the view with the existing ticket_id
@@ -219,10 +223,11 @@ class ticketController extends Controller
                 'request_method' => $request_method, 
                 'admin_settings' => $admin_settings,
                 'ticketPayments' => $existing_ticket->ticketPayments->first(),
-                'initialPaymentData' => $initialPaymentData,
+                'WebHookPaymentData' => $WebHookPaymentData,
                 'customerAddress' => $customerAddress,
                 'ticketMedia' => $ticketMedia,
-                'mediaComments' => $mediaComments
+                'mediaComments' => $mediaComments,
+                'ticketShippingPayments' => $ticketShippingPayments
             ]);
         } 
     }
@@ -343,33 +348,7 @@ class ticketController extends Controller
                 // Handle the case where the file is not uploaded (if needed)
                 $path = null;
             }
-
-            // Start a database transaction
-            DB::beginTransaction();
-
-            // Create a new Ticket Payment data and save it to the database
-            $ticketPayment = new TicketPayments($validatedData);
-            $ticketPayment->ticket_id = $validatedData['ticket_id'];
-            $ticketPayment->total_handling_fee = $validatedData['totalHandlingFee'];
-            $ticketPayment->total_custom_tax = $validatedData['totalCustomTax'];
-            $ticketPayment->total_convenience_fee = $validatedData['totalConvenienceFee'];
-            $ticketPayment->total_credit_card_fee = $validatedData['totalCreditCardFee'];
-            $ticketPayment->total_product_value = $validatedData['productValue'];
-            $ticketPayment->total_product_price = $validatedData['productTotalValue'];
-            $ticketPayment->payment_type = $validatedData['payment_type'];
-            $ticketPayment->image_path = $path; //image
-            $ticketPayment->save();
-
-            // Update Ticket data and save it to the database
-            $ticketUpdate = Ticket::where('ticket_id', $validatedData['ticket_id'])->first();
-            $ticketUpdate->status = 'pendingPayment';
-            $ticketUpdate->steps = 2;
-            $ticketUpdate->save();
-
-            // Commit the transaction
-            DB::commit();
-
-
+ 
 
             //Create product for customer initial payment request
             $shopify = new ShopifySDK();
@@ -428,6 +407,33 @@ class ticketController extends Controller
             ];
             
             $createdOrder = $shopify->Order->post($orderData); //create order for newly added product
+
+
+            // Start a database transaction
+            DB::beginTransaction();
+
+            // Create a new Ticket Payment data and save it to the database
+            $ticketPayment = new TicketPayments($validatedData);
+            $ticketPayment->ticket_id = $validatedData['ticket_id'];
+            $ticketPayment->total_handling_fee = $validatedData['totalHandlingFee'];
+            $ticketPayment->total_custom_tax = $validatedData['totalCustomTax'];
+            $ticketPayment->total_convenience_fee = $validatedData['totalConvenienceFee'];
+            $ticketPayment->total_credit_card_fee = $validatedData['totalCreditCardFee'];
+            $ticketPayment->total_product_value = $validatedData['productValue'];
+            $ticketPayment->total_product_price = $validatedData['productTotalValue'];
+            $ticketPayment->payment_type = $validatedData['payment_type'];
+            $ticketPayment->shopify_product_ip_id = $createdProduct['id'];
+            $ticketPayment->image_path = $path; //image
+            $ticketPayment->save();
+
+            // Update Ticket data and save it to the database
+            $ticketUpdate = Ticket::where('ticket_id', $validatedData['ticket_id'])->first();
+            $ticketUpdate->status = 'pendingPayment';
+            $ticketUpdate->steps = 2;
+            $ticketUpdate->save();
+
+            // Commit the transaction
+            DB::commit();
             
             
 
@@ -438,49 +444,53 @@ class ticketController extends Controller
             Log::error('Error in initialPayment: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred. Please try again later.');
         }
+
     }
 
-    // STEP 2: Initial Payment Checker - SHOPIFY WEBHOOK 
-    public function initialPaymentChecker(Request $request) {
-        $data = $request->all();
-        Log::info('Full webhook data:', $data);
+    // // STEP 2: Initial Payment Checker - SHOPIFY WEBHOOK 
+    // public function initialPaymentChecker(Request $request) {
+    //     $data = $request->all();
+    //     Log::info('Full webhook data:', $data);
     
-        // Extract the customer_id and note (which you use as ticket_id) from the data
-        $customerId = isset($data['customer']['id']) ? $data['customer']['id'] : null;
-        $note = isset($data['note']) ? $data['note'] : 'No note provided';
+    //     // Extract the customer_id and note (which you use as ticket_id) from the data
+    //     $customerId = isset($data['customer']['id']) ? $data['customer']['id'] : null;
+    //     $note = isset($data['note']) ? $data['note'] : 'No note provided';
+    //     $shopify_product_id = isset($data['line_items'][0]['product_id']) ? $data['line_items'][0]['product_id'] : null;
     
-        try {
-            // Start a database transaction
-            DB::beginTransaction();
+    //     try {
+    //         // Start a database transaction
+    //         DB::beginTransaction();
     
-            // Store the data in the database using the model
-            WebhookData::create([
-                'customer_id' => $customerId,
-                'ticket_id' => $note,
-                'data' => json_encode($data),
-            ]);
+    //         // Store the data in the database using the model
+    //         WebhookData::create([
+    //             'customer_id' => $customerId,
+    //             'ticket_id' => $note,
+    //             'payment_type' => 'initial-payment',
+    //             'shopify_product_id' => $shopify_product_id,
+    //             'data' => json_encode($data),
+    //         ]);
 
-            $ticketUpdate = Ticket::where('ticket_id', $note)->first();
-            $ticketUpdate->status = 'initialPaymentPaid'; 
-            $ticketUpdate->save();
+    //         $ticketUpdate = Ticket::where('ticket_id', $note)->first();
+    //         $ticketUpdate->status = 'initialPaymentPaid'; 
+    //         $ticketUpdate->save();
     
-            // Commit the transaction
-            DB::commit();
+    //         // Commit the transaction
+    //         DB::commit();
 
-        } catch (\Exception $e) {
-            // Rollback the transaction
-            DB::rollBack();
+    //     } catch (\Exception $e) {
+    //         // Rollback the transaction
+    //         DB::rollBack();
     
-            // Log the exception
-            Log::error('Error saving webhook data:', ['exception' => $e]);
+    //         // Log the exception
+    //         Log::error('Error saving webhook data:', ['exception' => $e]);
     
-            // Respond with a failure status (4XX or 5XX) to acknowledge the error
-            return response()->json(['success' => false, 'message' => 'Error processing webhook'], 500);
-        }
+    //         // Respond with a failure status (4XX or 5XX) to acknowledge the error
+    //         return response()->json(['success' => false, 'message' => 'Error processing webhook'], 500);
+    //     }
     
-        // Respond with a success status (2XX) to acknowledge the webhook
-        return response()->json(['success' => true]);
-    }
+    //     // Respond with a success status (2XX) to acknowledge the webhook
+    //     return response()->json(['success' => true]);
+    // }
 
 
     // PROCEED TO STEP 3: ADD PROOF/MEDIA/IMAGES
@@ -586,11 +596,195 @@ class ticketController extends Controller
 
         // Save the image path to the database
         $stepUpdate = Ticket::where('ticket_id', $ticket_id)->first();
-        $stepUpdate->status = 'addingMedia'; //UPDATE STATUS
+        $stepUpdate->status = 'shippingPayment'; //UPDATE STATUS
         $stepUpdate->steps = 4; //UPDATE STEP
         $stepUpdate->save();
     
         return redirect()->back()->with('success', 'Ticket updated successfully.');
+    }
+
+
+    // STEP 4: SHIPPING PAYMENT
+    public function shippingPayment(Request $request){ 
+        
+        try {
+            // Validate the request
+            $validatedData = $request->validate([ 
+                'ticket_id' => 'required|string|max:255',
+                'shipping_value' => 'required', 
+                'requestShippingEstimateFile' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+                'customer_fname' => 'required|string|max:255', 
+                'customer_id' => 'required|string|max:255',
+
+            ]);
+
+            // Check if the file is uploaded
+            if ($request->hasFile('requestShippingEstimateFile')) {
+                $image = $validatedData['requestShippingEstimateFile'];
+                $imageName = time() . '.' . $image->extension();
+                $path = $image->store('public/images/request-shipping-estimate'); 
+
+                // Remove 'public/' from the path
+                $path = str_replace('public/', '', $path);
+
+                // Create a URL for the image
+                $imageUrl = config('app.url') . Storage::url($path);
+                Log::info('image URL: ' . $imageUrl);
+
+            } else {
+                // Handle the case where the file is not uploaded (if needed)
+                $path = null;
+            }
+
+
+            //Create product for customer Shipping payment request
+            $shopify = new ShopifySDK();
+
+            $customerDetails = Customer::where('id', $validatedData['customer_id'])->first(); 
+
+            $productData = [
+                'title' => 'Shipping Payment for ' . $validatedData["customer_fname"],
+                'body_html' => 'This is a product for Shipping payment request for ' . $validatedData["customer_fname"],
+                'variants' => [
+                    [
+                        'price' => $validatedData['shipping_value'], // Set shipping price based on request
+                        'inventory_management' => 'shopify', // Enable Shopify inventory management
+                        'inventory_policy' => 'deny', // Deny when out of stock
+                        'fulfillment_service' => 'manual', // Manual fulfillment service
+                        'sku' => 'shipping-payment-' . $validatedData["customer_id"], // Add a SKU for tracking
+                        'inventory_quantity' => 1, // Set the quantity to 1
+                        'requires_shipping' => false, // No shipping required
+                    ],
+                ],
+                'images' => [
+                    [
+                        // 'src' => 'https://cdn.shopify.com/s/files/1/0637/7789/8668/files/req_payment.jpg?v=1717450246',
+                        'src' => $imageUrl, // Use the uploaded image URL
+                    ],
+                ],
+                 
+            ];
+            
+            // Create the product
+            $createdProduct = $shopify->Product->post($productData);
+
+            $collectionId = '302621229228'; //collection ID for "Initial Payment Request"
+
+            // Associate the product with the collection
+            $collectData = [
+                'product_id' => $createdProduct['id'],
+                'collection_id' => $collectionId,
+            ];
+
+            $createdCollect = $shopify->Collect->post($collectData); //Assign the newly created product to "Initial Payment Request" collection
+
+            //Create Order
+            $orderData = [
+                'line_items' => [
+                    [
+                        'variant_id' => $createdProduct['variants'][0]['id'],
+                        'quantity' => 1,
+                    ],
+                ],
+                'customer' => [
+                    'email' => $customerDetails->email, // Customer's email address 
+                ],
+                'financial_status' => 'pending', // Set to 'pending' or 'on_hold'
+                'note' => $validatedData['ticket_id'], // Custom note here | Store the ticket_id here
+            ];
+            
+            $createdOrder = $shopify->Order->post($orderData); //create order for newly added product 
+
+            // Start a database transaction
+            DB::beginTransaction();
+
+            // Create a new Ticket Shipping Payment data and save it to the database
+            $ticketShippingPayment = new ticketShippingPayments($validatedData);
+            $ticketShippingPayment->ticket_id = $validatedData['ticket_id']; 
+            $ticketShippingPayment->shopify_product_sp_id = $createdProduct['id']; 
+            $ticketShippingPayment->total_shipping_value = $validatedData['shipping_value']; 
+            $ticketShippingPayment->image_path = $path; //image
+            $ticketShippingPayment->save();
+
+            // Update Ticket data and save it to the database
+            $ticketUpdate = Ticket::where('ticket_id', $validatedData['ticket_id'])->first();
+            $ticketUpdate->status = 'pendingShippingPayment';
+            $ticketUpdate->steps = 5;
+            $ticketUpdate->save();
+
+            // Commit the transaction
+            DB::commit();
+
+
+            return redirect()->back()->with('success', 'Product for shipping payment created successfully.');
+
+        } catch (\Exception $e) {
+
+            // Handle exceptions (log, rollback, etc.)
+            DB::rollback();
+            Log::error('Error in shippingPayment: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred. Please try again later.');
+            
+        }
+
+    }
+
+    // STEP 1 & 5: Payment Checker - SHOPIFY WEBHOOK 
+    public function PaymentChecker(Request $request) {
+        $data = $request->all();
+        Log::info('Full webhook data:', $data);
+    
+        // Extract the customer_id and note (which you use as ticket_id) from the data
+        $customerId = isset($data['customer']['id']) ? $data['customer']['id'] : null;
+        $note = isset($data['note']) ? $data['note'] : 'No note provided';
+        $shopify_product_id = isset($data['line_items'][0]['product_id']) ? $data['line_items'][0]['product_id'] : null;
+        $shopify_order_id = isset($data['id']) ? $data['id'] : null;
+        $shopify_product_name = isset($data['line_items'][0]['name']) ? $data['line_items'][0]['name'] : null;
+
+        // Determine the type of payment based on the product name
+        $paymentType = '';
+        if ($shopify_product_name) {
+            if (strpos($shopify_product_name, 'Initial Payment') !== false) {
+                $paymentType = 'initial-payment';
+            } elseif (strpos($shopify_product_name, 'Shipping Payment') !== false) {
+                $paymentType = 'shipping-payment';
+            }
+        }
+    
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+    
+            // Store the data in the database using the model
+            WebhookData::create([
+                'customer_id' => $customerId,
+                'ticket_id' => $note,
+                'order_id' => $shopify_order_id,
+                'payment_type' => $paymentType,
+                'shopify_product_id' => $shopify_product_id,
+                'data' => json_encode($data),
+            ]);
+
+            $ticketUpdate = Ticket::where('ticket_id', $note)->first();
+            $ticketUpdate->status = 'shippingPaymentPaid'; 
+            $ticketUpdate->save();
+    
+            // Commit the transaction
+            DB::commit();
+
+        } catch (\Exception $e) {
+            // Rollback the transaction
+            DB::rollBack();
+    
+            // Log the exception
+            Log::error('Error saving webhook data:', ['exception' => $e]);
+    
+            // Respond with a failure status (4XX or 5XX) to acknowledge the error
+            return response()->json(['success' => false, 'message' => 'Error processing webhook'], 500);
+        }
+    
+        // Respond with a success status (2XX) to acknowledge the webhook
+        return response()->json(['success' => true]);
     }
 
     

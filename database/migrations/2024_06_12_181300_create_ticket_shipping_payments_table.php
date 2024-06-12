@@ -11,20 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ticket_payments', function (Blueprint $table) {
+        Schema::create('ticket_shipping_payments', function (Blueprint $table) {
             $table->id();
             $table->string('ticket_id', 50);
-            $table->string('shopify_product_ip_id', 50);
-            $table->decimal('total_handling_fee', 8, 2);
-            $table->decimal('total_custom_tax', 8, 2);
-            $table->decimal('total_convenience_fee', 8, 2);
-            $table->decimal('total_credit_card_fee', 8, 2);
-            $table->decimal('total_product_value', 8, 2);
-            $table->decimal('total_product_price', 8, 2);
-            $table->string('payment_type', 100)->nullable();
+            $table->string('shopify_product_sp_id', 50);
             $table->string('image_path')->nullable();
+            $table->decimal('total_shipping_value', 8, 2);
             $table->timestamps();
-        
+
             $table->foreign('ticket_id')->references('ticket_id')->on('tickets')->onDelete('cascade');
         });
     }
@@ -34,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ticket_payments');
+        Schema::dropIfExists('ticket_shipping_payments');
     }
 };

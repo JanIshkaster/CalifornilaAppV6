@@ -5,24 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ticketPayments extends Model
+class ticketShippingPayments extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'ticket_id', 
-        'shopify_product_ip_id',
-        'total_handling_fee',
-        'total_custom_tax',
-        'total_convenience_fee',
-        'total_credit_card_fee',
-        'total_product_value',
-        'total_product_price', 
-        'payment_type',
-        'image_path'
+        'shopify_product_sp_id', 
+        'image_path',
+        'total_shipping_value'
     ];
 
     public function ticket(){
         return $this->belongsTo(Ticket::class, 'ticket_id', 'ticket_id');
     }
+
 }

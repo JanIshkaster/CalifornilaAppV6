@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
 
     // STEP 4: Shipping payment
     Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_4', [ticketController::class, 'step_4'])->name('step_4'); //proceed to step 4
+    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/shippingPayment', [ticketController::class, 'shippingPayment'])->name('shippingPayment'); //shippingPayment
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');
@@ -99,8 +100,8 @@ Route::middleware('auth')->group(function () {
     //Get products from Buying Assistance page - californila shopify
     Route::post('/get_declared_products', [formController::class, 'get_declared_products']);
 
-    //Initial Payment Checker - Shopify Webhook
-    Route::any('/initial-payment-checker', [ticketController::class, 'initialPaymentChecker']);
+    //Payment Checker - Shopify Webhook
+    Route::any('/payment-checker', [ticketController::class, 'PaymentChecker']);
  
 
 require __DIR__.'/auth.php';
