@@ -14,6 +14,9 @@ class WebhookData extends Model
     protected $fillable = [
         'customer_id',
         'ticket_id',
+        'shopify_order_id',
+        'shopify_product_id',
+        'payment_type',
         'data',
     ];
 

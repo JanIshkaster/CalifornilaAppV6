@@ -1,5 +1,4 @@
-<fieldset id="step-2" role="tabpanel" aria-labelledby="steps" class="body" aria-hidden="true">  
-
+<fieldset id="step-5" role="tabpanel" aria-labelledby="steps" class="body" aria-hidden="true">  
 
     @php 
         $jsonData = null;
@@ -7,13 +6,14 @@
 
         if ($WebHookPaymentData->isNotEmpty()) {
             foreach ($WebHookPaymentData as $paymentData) {
-                if ($paymentData->payment_type == 'initial-payment') {
+                if ($paymentData->payment_type == 'shipping-payment') {
                     $jsonData = json_decode($paymentData->data, true);
                     $order_status_url = $jsonData['order_status_url'] ?? '';
                     $shopify_product_id = $jsonData['line_items'][0]['product_id'] ?? '';
- 
-                    $ticketInitialPayment = $ticketPayments->where('shopify_product_ip_id', $shopify_product_id)->first();
-                    if ($ticketInitialPayment) {
+
+                    // Assuming $ticketShippingPayments is fetched similarly to $WebHookPaymentData
+                    $ticketShippingPayment = $ticketShippingPayments->where('shopify_product_sp_id', $shopify_product_id)->first();
+                    if ($ticketShippingPayment) {
                         $isPaid = true;
                         break; // Exit the loop once a match is found
                     }
@@ -21,9 +21,10 @@
             }
         }
     @endphp
-    
 
-    @if ($jsonData && $isPaid) 
+ 
+
+    @if ($jsonData && $isPaid)  
 
         <div id="alert-additional-content-3" class="p-4 mb-4 text-green-800 border border-green-300 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:border-green-800" role="alert">
             <div class="flex items-center">
@@ -31,7 +32,7 @@
                 <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
             </svg>
             <span class="sr-only">Info</span>
-            <h3 class="text-lg font-medium">Initial Payment Request Paid!</h3>
+            <h3 class="text-lg font-medium">Shipping Payment Request Paid!</h3>
             </div>
             <div class="mt-2 mb-4 text-sm">
             More info about this info success goes here. This example text is going to run a bit longer so that you can see how spacing within an alert works with this kind of content.
@@ -45,7 +46,7 @@
                 Confirm order link
             </a>
 
-            @if ($steps == '2')
+            @if ($steps == '5')
                 <a onclick="return confirmProceed();" href="{{ route('step_3', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}"  
                     class="text-gray bg-yellow-800 hover:bg-yellow-900 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-large rounded-lg text-md px-3 py-1.5 me-2 text-center inline-flex items-center dark:bg-yellow-300 dark:text-gray-800 dark:hover:bg-yellow-400 dark:focus:ring-yellow-800">
                     <span class="mdi mdi-page-next" style="margin-right:5px;"></span>
@@ -75,8 +76,8 @@
             @endif
 
             </div>
-        </div> 
-
+        </div>
+         
     @else
         <div id="alert-additional-content-2" class="p-4 mb-4 text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
             <div class="flex items-center">

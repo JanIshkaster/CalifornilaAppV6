@@ -44,7 +44,7 @@
             @case(strpos($requestMethod, 'request') !== false)
                 <div class="fieldset-content" id="initial_payment_form_container">   
                         
-                    @if ($ticketPayments && $ticketPayments->first() && $ticketPayments->first()->ticket_id)
+                    @if ($ticketPayments && $ticketPayments->first() && $ticketPayments->first()->ticket_id == $ticket_id)
                         <div class="form-group w-full mt-3 mb-3">
                             <label for="find_bank" class="form-label">Product Value</label> 
                         </div>

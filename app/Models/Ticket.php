@@ -9,6 +9,7 @@ use App\Models\ticketNotes;
 use App\Models\ticketProofOfPayment;
 use App\Models\ticketAdditionalFees;
 use App\Models\ticketPayments;
+use App\Models\ticketShippingPayments;
 use App\Models\mediaComment;
 
 class Ticket extends Model
@@ -48,6 +49,10 @@ class Ticket extends Model
 
     public function ticketPayments(){
         return $this->hasMany(ticketPayments::class, 'ticket_id', 'ticket_id');
+    }
+
+    public function ticketShippingPayments(){
+        return $this->hasMany(ticketShippingPayments::class, 'ticket_id', 'ticket_id');
     }
 
     public function DeclaredProducts(){
