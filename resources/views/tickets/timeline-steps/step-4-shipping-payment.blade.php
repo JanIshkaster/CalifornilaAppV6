@@ -130,8 +130,7 @@
                     // ITERATE OVER EACH BUTTON
                     reqShippingEstimateBtns.forEach(function(reqShippingEstimateBtn) {
                         // REMOVE DISABLED ATTRIBUTE FROM EACH BUTTON
-                        reqShippingEstimateBtn.removeAttribute('disabled');
-                        declared_value();
+                        reqShippingEstimateBtn.removeAttribute('disabled'); 
                     });
                 });
             });

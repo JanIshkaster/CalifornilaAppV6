@@ -70,6 +70,13 @@ Route::middleware('auth')->group(function () {
     // STEP 4: Shipping payment
     Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_4', [ticketController::class, 'step_4'])->name('step_4'); //proceed to step 4
     Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/shippingPayment', [ticketController::class, 'shippingPayment'])->name('shippingPayment'); //shippingPayment
+
+    // STEP 6: Adding Tracking Code
+    Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_6', [ticketController::class, 'step_6'])->name('step_6'); //proceed to step 6
+    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/add_tracking_code', [ticketController::class, 'addTrackingCode'])->name('addTrackingCode'); //Step 6 Add Tracking Code
+
+    // STEP 7: On the way to customer step
+    Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_7', [ticketController::class, 'step_7'])->name('step_7'); //proceed to step 7
         
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');

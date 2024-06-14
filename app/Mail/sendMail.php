@@ -15,16 +15,14 @@ class sendMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $data; //set the data here
+    public $data; //set the data here 
 
     /**
      * Create a new message instance.
      */
     public function __construct($data)
     {
-        //pass the $data here
-        $this->data = $data;
-        $this->data['emailContent'] = $this->emailType($data);
+        $this->data = $data; 
     }
 
     public function emailType($data) { 
@@ -47,6 +45,47 @@ class sendMail extends Mailable
                         <h4 style="margin:0;">Purpose:</h4> <span style="margin-left:10px;">' . e($data['fee_data_details']) . '</span>
                     </div> 
                 </div>';
+
+                // EMAIL INITIAL PAYMENT: STEP 1
+                case 'initialPayment':
+                    $imageCount = is_array($data['image_url']) ? count($data['image_url']) : 0;
+                    $productsHtml = '';
+                    foreach ($data['products'] as $product) {
+                        $productsHtml .= '<tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" style="border-bottom: 1px solid #e5e7eb;">
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">' . e($product->product_name) . '</td>
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">' . e($product->product_qty) . '</td>
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">' . e($product->product_variant) . '</td>
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">
+                                                <a href="' . e($product->product_link) . '" class="text-blue-600 no-underline bg-transparent" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none;">
+                                                    <span class="mdi mdi-link"></span> Link
+                                                </a>
+                                            </td>
+                                        </tr>';
+                    }
+                
+                    return '<div class="card-header">
+                                    <h3>Hello ' . e($data['customer_fname']) . ', here is the requested payment for your ticket#: ' . e($data['ticket_id']) . '</h3> 
+                                </div>
+                                <div class="card-body" style="margin-bottom:20px;">
+                                    <div class="images_container" style="display: flex; align-items: center;">
+                                        <h4 style="margin:0;">Please see attached images:</h4> <span style="margin-left:10px;">' . $imageCount . ' image(s) attached</span>
+                                    </div> 
+                                    <div class="products_container" style="margin-top: 20px;">
+                                        <h4 style="margin: 0;">Products:</h4>
+                                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 mt-4" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400" style="background-color: #f9fafb;">
+                                                    <tr>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Product</th>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Qty</th>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Variation</th>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Link</th> 
+                                                    </tr>
+                                                </thead>
+                                            <tbody>' . $productsHtml . '</tbody>
+                                        </table>
+                                    </div>
+                                </div>';
+                
 
                 // EMAIL FOR MEDIA COMMENT: STEP 3
                 case 'emailMediaComment':
@@ -74,49 +113,77 @@ class sendMail extends Mailable
      */
     public function envelope(): Envelope
     {
-    // Set the subject based on the email type
-    $subject = '';
+        // Set the subject based on the email type
+        $subject = '';
         switch ($this->data['email_type']) {
             case 'emailNote':
-                $subject = 'New notes added to your ticket';
+                $subject = 'New notes added to your ticket ' . e($this->data['ticket_id']);
                 break;
             case 'emailFee':
-                $subject = 'Additional fees added to your ticket';
+                $subject = 'Additional fees added to your ticket ' . e($this->data['ticket_id']);
                 break;
             case 'emailMediaComment':
-                $subject = 'New comment added to your ticket';
+                $subject = 'New comment added to your ticket ' . e($this->data['ticket_id']);
+                break;
+            case 'initialPayment':
+                $subject = 'Initial Payment Request for your ticket ' . e($this->data['ticket_id']);
                 break;
             default:
-                $subject = 'Update on your ticket';
+                $subject = 'Update on your ticket ' . e($this->data['ticket_id']);
                 break;
         }
-
+    
         return new Envelope(
             subject: $subject,
         );
     }
+    
  
 
 
     /**
      * Build the message.
      */
-    public function build()
-    {
+    public function build() {
+
+        $this->data['emailContent'] = $this->emailType($this->data);
+
         $email = $this->from('janluigieflores@gmail.com', 'Californila App')
                       ->markdown('emails.sendMail');
 
-        if ($this->data['email_type'] == 'emailMediaComment' && isset($this->data['uploaded_images'])) {
-        foreach ($this->data['uploaded_images'] as $image) {
-            $path = public_path('storage/' . $image);
-            if (file_exists($path)) {
-                $email->attach($path); 
-            } else {
-                // Log an error message
-                \Log::error("File does not exist at path: " . $path);
+        // Manually add CC
+        // $email->cc('cc@example.com'); // Replace with the desired CC address
+
+        // Manually add BCC
+        $email->bcc('jan@ishkaster.com'); // Replace with the desired BCC address
+
+        // FOR INITIAL PAYMENT: STEP 1
+        if ($this->data['email_type'] == 'initialPayment' && is_array($this->data['image_url'])) {
+            foreach ($this->data['image_url'] as $image) {
+                $path = public_path('storage/' . $image);
+                if (file_exists($path)) {
+                    $email->attach($path); 
+                } else {
+                    // Log an error message
+                    \Log::error("FOR INITIAL PAYMENT: STEP 1: File does not exist at path: " . $path);
+                }
             }
         }
-    }
+        
+
+        //FOR MEDIA UPLOAD: STEP 3
+        if ($this->data['email_type'] == 'emailMediaComment' && isset($this->data['uploaded_images'])) {
+            foreach ($this->data['uploaded_images'] as $image) {
+                $path = public_path('storage/' . $image);
+                if (file_exists($path)) {
+                    $email->attach($path); 
+                } else {
+                    // Log an error message
+                    \Log::error("FOR MEDIA UPLOAD: STEP 3: File does not exist at path: " . $path);
+                }
+            }
+
+        }
 
         return $email;
     }
