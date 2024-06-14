@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ticketNotes;
 use App\Models\Customer;
+use App\Models\Ticket;
 use App\Models\ticketAdditionalFees;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,9 @@ class ticketAddFeeController extends Controller
         $ticketAdditionalFees->save(); // Save the data
     
         // After saving the ticket additional fee, send the mail
-        $customerEmail = 'jan@ishkaster.com'; // Replace with the customer's email address
+        $getCustomerIdFromTicket = Ticket::where('ticket_id', $data['ticket_id'])->get(); // Get Customer ID form Ticket
+        $getCustomer = Customer::where('id', $getCustomerIdFromTicket->first()->customer_id)->get(); // Replace with the customer's email address  
+        $customerEmail = $getCustomer->first()->email;
         Mail::to($customerEmail)->send(new sendMail($data));
     
         return redirect()->back()->with('success', 'Fee added successfully');

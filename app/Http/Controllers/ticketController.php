@@ -13,6 +13,7 @@ use App\Models\ticketAdditionalFees;
 use App\Models\ticketPayments;
 use App\Models\ticketProofOfPayment;
 use App\Models\ticketShippingPayments;
+use App\Models\ticketTrackingCode;
 use App\Models\Settings;
 use App\Models\WebhookData;
 use App\Models\mediaComment;
@@ -141,35 +142,23 @@ class ticketController extends Controller
     //GENERATE TICKET ID
     private function generateTicketId($existing_ticket, $customer_id){
         $date_prefix = date('Ymd'); // This will give a string like "20240522" for May 22, 2024 
-
+    
         if ($existing_ticket) {
             // If a ticket already exists, increment the ticket number
             $ticket_number = (int) substr($existing_ticket->ticket_id, -5); // Extract the numeric part of the existing ticket ID
-            $new_ticket_number = $ticket_number + 1; // Increment the ticket number
         } else {
             // Generate a new ticket number
             $ticket_number = Ticket::where('customer_id', $customer_id)->count() + 1; // Get the count of existing tickets for the specific customer and add one to it
-            $new_ticket_number = $ticket_number;
         }
     
-        $formatted_ticket_number = str_pad($new_ticket_number, 5, '0', STR_PAD_LEFT); // Format the ticket number to have 5 digits with leading zeros
-        $ticket_id = $date_prefix . '_' . $formatted_ticket_number; // Construct the updated ticket ID
-
-        // If the ticket ID already exists, increment it by 1
-        if (Ticket::where('ticket_id', $ticket_id)->exists()) {
-            // Extract the numeric part of the existing ticket ID
-            $ticket_number = (int) substr($ticket_id, -5);
-            $new_ticket_number = $ticket_number + 1; // Increment the ticket number
-            $formatted_ticket_number = str_pad($new_ticket_number, 5, '0', STR_PAD_LEFT); // Format the ticket number
-            $ticket_id = $date_prefix . '_' . $formatted_ticket_number; // Construct the updated ticket ID
-        }
-
+        do {
+            $new_ticket_number = $ticket_number++;
+            $formatted_ticket_number = str_pad($new_ticket_number, 5, '0', STR_PAD_LEFT); // Format the ticket number to have 5 digits with leading zeros
+            $ticket_id = $date_prefix . '_' . $formatted_ticket_number; // Construct the updated ticket ID 
+        } while (Ticket::where('ticket_id', $ticket_id)->exists()); // Keep looping until a unique ticket_id is found
+    
         return $ticket_id;
-
-    }
-
-
-
+    } 
 
 
     //Open Ticket Page
@@ -207,6 +196,8 @@ class ticketController extends Controller
 
         $ticketShippingPayments = ticketShippingPayments::where('ticket_id', $ticket_id)->get(); //get all the Shipping Payments details - step 4
 
+        $ticketTrackingCode = ticketTrackingCode::where('ticket_id', $ticket_id)->get(); //get all the Shipping Payments details - step 4
+
         if ($existing_ticket) {
             // If a ticket already exists, return the view with the existing ticket_id
             return view('tickets.view-ticket', [ 
@@ -227,7 +218,8 @@ class ticketController extends Controller
                 'customerAddress' => $customerAddress,
                 'ticketMedia' => $ticketMedia,
                 'mediaComments' => $mediaComments,
-                'ticketShippingPayments' => $ticketShippingPayments
+                'ticketShippingPayments' => $ticketShippingPayments,
+                'ticketTrackingCode' => $ticketTrackingCode
             ]);
         } 
     }
@@ -310,7 +302,7 @@ class ticketController extends Controller
 
 
     // STEP 1: Initial Payment 
-    public function initialPayment(Request $request) {    
+    public function initialPayment(Request $request) {     
 
         try {
             // Validate the request
@@ -329,6 +321,7 @@ class ticketController extends Controller
                 'payment_type' => 'nullable|string|max:255',
                 'customer_fname' => 'required|string|max:255', 
                 'requestEstimateFile' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+                'email_type' => 'string|max:255',
             ]);
 
             // Check if the file is uploaded
@@ -380,6 +373,9 @@ class ticketController extends Controller
             
             // Create the product
             $createdProduct = $shopify->Product->post($productData);
+
+            // Generate the product URL
+            $productUrl = 'californila-v2.myshopify.com/products/' . $createdProduct['handle'];
 
             $collectionId = '302621229228'; //collection ID for "Initial Payment Request"
 
@@ -435,6 +431,25 @@ class ticketController extends Controller
             // Commit the transaction
             DB::commit();
             
+            // After saving the validatedData to database, send the mail
+            $getCustomerIdFromTicket = Ticket::where('ticket_id', $validatedData['ticket_id'])->get(); // Get Customer ID form Ticket
+            $getCustomer = Customer::where('id', $getCustomerIdFromTicket->first()->customer_id)->get(); // Replace with the customer's email address  
+            $customerEmail = $getCustomer->first()->email;
+
+            // Check if a ticket with the given customer_id already exists
+            $existing_ticket = Ticket::with(['DeclaredProducts'])->where('ticket_id', $validatedData['ticket_id'])->first();
+
+            // Retrieve all products associated with the specific ticket
+            $products = $existing_ticket ? $existing_ticket->DeclaredProducts : collect(); // Use collect() to handle empty case
+
+            // Add product details to the email data
+            $data = array_merge($validatedData, [
+                'product_url' => $productUrl,
+                'image_url' => $imageUrl,
+                'products' => $products,
+            ]);  
+
+            Mail::to($customerEmail)->send(new sendMail($data));
             
 
             return redirect()->back()->with('success', 'Product for payment created successfully.');
@@ -445,52 +460,7 @@ class ticketController extends Controller
             return redirect()->back()->with('error', 'An error occurred. Please try again later.');
         }
 
-    }
-
-    // // STEP 2: Initial Payment Checker - SHOPIFY WEBHOOK 
-    // public function initialPaymentChecker(Request $request) {
-    //     $data = $request->all();
-    //     Log::info('Full webhook data:', $data);
-    
-    //     // Extract the customer_id and note (which you use as ticket_id) from the data
-    //     $customerId = isset($data['customer']['id']) ? $data['customer']['id'] : null;
-    //     $note = isset($data['note']) ? $data['note'] : 'No note provided';
-    //     $shopify_product_id = isset($data['line_items'][0]['product_id']) ? $data['line_items'][0]['product_id'] : null;
-    
-    //     try {
-    //         // Start a database transaction
-    //         DB::beginTransaction();
-    
-    //         // Store the data in the database using the model
-    //         WebhookData::create([
-    //             'customer_id' => $customerId,
-    //             'ticket_id' => $note,
-    //             'payment_type' => 'initial-payment',
-    //             'shopify_product_id' => $shopify_product_id,
-    //             'data' => json_encode($data),
-    //         ]);
-
-    //         $ticketUpdate = Ticket::where('ticket_id', $note)->first();
-    //         $ticketUpdate->status = 'initialPaymentPaid'; 
-    //         $ticketUpdate->save();
-    
-    //         // Commit the transaction
-    //         DB::commit();
-
-    //     } catch (\Exception $e) {
-    //         // Rollback the transaction
-    //         DB::rollBack();
-    
-    //         // Log the exception
-    //         Log::error('Error saving webhook data:', ['exception' => $e]);
-    
-    //         // Respond with a failure status (4XX or 5XX) to acknowledge the error
-    //         return response()->json(['success' => false, 'message' => 'Error processing webhook'], 500);
-    //     }
-    
-    //     // Respond with a success status (2XX) to acknowledge the webhook
-    //     return response()->json(['success' => true]);
-    // }
+    } 
 
 
     // PROCEED TO STEP 3: ADD PROOF/MEDIA/IMAGES
@@ -785,6 +755,72 @@ class ticketController extends Controller
     
         // Respond with a success status (2XX) to acknowledge the webhook
         return response()->json(['success' => true]);
+    }
+
+
+    // PROCEED TO STEP 6: ADDING TICKET TRACKING
+    public function step_6($customer_id, $ticket_id){ 
+
+        // Save the image path to the database
+        $stepUpdate = Ticket::where('ticket_id', $ticket_id)->first();
+        $stepUpdate->status = 'addingTracking'; //UPDATE STATUS
+        $stepUpdate->steps = 6; //UPDATE STEP
+        $stepUpdate->save();
+    
+        return redirect()->back()->with('success', 'Ticket updated successfully.');
+    }
+
+    public function addTrackingCode(Request $request, $customer_id, $ticket_id){ 
+
+        try {  
+            // Validate the request
+            $validatedData = $request->validate([ 
+                'ticket_id' => 'required|string|max:255', 
+                'tracking_code' => 'string|max:300', 
+                'tracking_link' => 'string|max:300',  
+            ]);    
+
+            // Start a database transaction
+            DB::beginTransaction();
+
+            // Create a new Ticket Tracking Code data and save it to the database
+            $addTrackingCode = new ticketTrackingCode($validatedData);
+            $addTrackingCode->ticket_id = $validatedData['ticket_id']; 
+            $addTrackingCode->tracking_code = $validatedData['tracking_code']; 
+            $addTrackingCode->tracking_link = $validatedData['tracking_link'];  
+            $addTrackingCode->save();
+
+            // Update Ticket data and save it to the database
+            $ticketUpdate = Ticket::where('ticket_id', $validatedData['ticket_id'])->first();
+            $ticketUpdate->status = 'trackingCodeAdded'; 
+            $ticketUpdate->save();
+
+            // Commit the transaction
+            DB::commit(); 
+
+            return redirect()->back()->with('success', 'Tracking code successfully.');
+
+        } catch (\Exception $e) {
+
+            // Handle exceptions (log, rollback, etc.)
+            DB::rollback();
+            Log::error('Error in addTrackingCode: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred. Please try again later.'); 
+            
+        }
+
+    }
+
+    // PROCEED TO STEP 7: ADDING TICKET TRACKING
+    public function step_7($customer_id, $ticket_id){ 
+
+        // Save the image path to the database
+        $stepUpdate = Ticket::where('ticket_id', $ticket_id)->first();
+        $stepUpdate->status = 'confirmClosingTicket'; //UPDATE STATUS
+        $stepUpdate->steps = 7; //UPDATE STEP
+        $stepUpdate->save();
+    
+        return redirect()->back()->with('success', 'Ticket updated successfully.');
     }
 
     

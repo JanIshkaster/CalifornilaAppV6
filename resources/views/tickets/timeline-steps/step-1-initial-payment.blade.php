@@ -118,6 +118,7 @@
                         <input type="hidden" name="productValue" class="productValue" value=""> 
                         <input type="hidden" value="" name="productTotalValue" class="productTotalValue"> 
                         <input type="hidden" value="initial payment" name="payment_type" class="payment_type"> 
+                        <input type="hidden" name="email_type" value="initialPayment" />
 
                         {{-- DISPLAY OUTPUT --}}
                         <div class="output_declared_data_initial_payment">

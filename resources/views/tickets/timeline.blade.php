@@ -169,15 +169,37 @@
 
     <!-- START - STEP 6: ADD TRACKING CODE -->
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden" id="step_6_content">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Tracking</h3>
-        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
+        <div class="step_header_wrap block justify-content-around w-full mb-3">
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Add Tracking Code</h1>
+            <h1 class="text-xl text-gray-900 dark:text-white mb-2">  
+                Request Type: 
+                <span class="font-bold text-yellow-300">
+                    {{ strpos(strtolower($request_method), 'request') !== false || strpos(strtolower($request_method), 'declared') !== false ? 'Request Estimate' : 'Declared Estimate' }}
+                </span>
+            </h1>
+        </div>  
+
+                @include('tickets.timeline-steps.step-6-add-tracking-code', 
+                        ['ticket_id' => $ticket_id,
+                        'customer_id' => $customer_id])
     </div>
     <!-- END - STEP 6: ADD TRACKING CODE -->
 
    <!-- START - STEP 7: CONFIRM TICKET CLOSING --> 
     <div class="tab-content p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full hidden" id="step_7_content">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">On the way to Customer</h3>
-        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aspernatur provident, asperiores libero reiciendis autem consequatur exercitationem consequuntur tenetur architecto officia, sed quod praesentium accusantium iure? Veritatis nemo sunt magnam nihil.</p>
+        <div class="step_header_wrap block justify-content-around w-full mb-3">
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Confirm Ticket Closing</h1>
+            <h1 class="text-xl text-gray-900 dark:text-white mb-2">  
+                Request Type: 
+                <span class="font-bold text-yellow-300">
+                    {{ strpos(strtolower($request_method), 'request') !== false || strpos(strtolower($request_method), 'declared') !== false ? 'Request Estimate' : 'Declared Estimate' }}
+                </span>
+            </h1>
+        </div>  
+
+                @include('tickets.timeline-steps.step-7-confirm-ticket-closing', 
+                        ['ticket_id' => $ticket_id,
+                        'customer_id' => $customer_id])
     </div>
     <!-- END - STEP 7: CONFIRM TICKET CLOSING -->
 

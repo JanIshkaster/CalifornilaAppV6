@@ -10,6 +10,7 @@ use App\Models\ticketProofOfPayment;
 use App\Models\ticketAdditionalFees;
 use App\Models\ticketPayments;
 use App\Models\ticketShippingPayments;
+use App\Models\ticketTrackingCode;
 use App\Models\mediaComment;
 
 class Ticket extends Model
@@ -57,6 +58,10 @@ class Ticket extends Model
 
     public function DeclaredProducts(){
         return $this->belongsToMany(DeclaredProducts::class);
+    }
+
+    public function ticketTrackingCode(){
+        return $this->hasOne(ticketTrackingCode::class, 'ticket_id', 'ticket_id');
     }
 
 }

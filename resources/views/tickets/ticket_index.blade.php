@@ -132,6 +132,13 @@
                                                     Pending Payment
                                                 </a>
                                                 @break
+
+                                            @case('pendingShippingPayment')
+                                                <a class="btn btn-danger w-full" href="">
+                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                    Pending Shipping Payment
+                                                </a>
+                                                @break
                                                 
                                             @case('addingMedia')
                                                 <a class="btn btn-light w-full" href="">
@@ -146,6 +153,29 @@
                                                     Initial Payment Paid
                                                 </a>
                                                 @break
+
+                                            @case('shippingPaymentPaid')
+                                                <a class="btn btn-dark w-full" href="">
+                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                    Shipping Payment Paid
+                                                </a>
+                                                @break
+
+                                            @case('trackingCodeAdded')
+                                                <a class="btn btn-success w-full" href="">
+                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                    Tracking Code Added
+                                                </a>
+                                                @break
+
+                                            @case('confirmClosingTicket')
+                                                <a class="btn btn-danger w-full" href="">
+                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                    Confirm Closing Ticket
+                                                </a>
+                                                @break
+
+                                                
                                         
                                             @default
                                                 {{-- Handle default case if needed --}}
