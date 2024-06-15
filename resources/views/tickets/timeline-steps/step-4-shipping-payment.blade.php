@@ -88,6 +88,7 @@
                 <input type="hidden" value="{{ $request_method }}" name="request_type" class="request_type">
                 <input type="hidden" value="{{ $status }}" name="status" class="status"> 
                 <input type="hidden" value="shipping payment" name="payment_type" class="payment_type"> 
+                <input type="hidden" name="email_type" value="shippingPayment" />
 
                 <label class="block mb-2 text-md font-medium text-gray-900 dark:text-white" for="small_size">Attach Estimate Shipping Request Image/File</label>
                 <input class="block w-full mb-5 text-md text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" 

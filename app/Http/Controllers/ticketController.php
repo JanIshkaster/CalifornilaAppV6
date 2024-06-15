@@ -297,10 +297,11 @@ class ticketController extends Controller
         // Redirect back with a success message
         return redirect()->back()->with('success', 'Product deleted successfully.'); 
  
-     }
+    }
 
 
 
+    
     // STEP 1: Initial Payment 
     public function initialPayment(Request $request) {     
 
@@ -375,7 +376,7 @@ class ticketController extends Controller
             $createdProduct = $shopify->Product->post($productData);
 
             // Generate the product URL
-            $productUrl = 'californila-v2.myshopify.com/products/' . $createdProduct['handle'];
+            $productUrl = 'https://californila-v2.myshopify.com/products/' . $createdProduct['handle'];
 
             $collectionId = '302621229228'; //collection ID for "Initial Payment Request"
 
@@ -386,7 +387,7 @@ class ticketController extends Controller
             ];
 
             $createdCollect = $shopify->Collect->post($collectData); //Assign the newly created product to "Initial Payment Request" collection
-
+             
             //Create Order
             $orderData = [
                 'line_items' => [
@@ -402,8 +403,10 @@ class ticketController extends Controller
                 'note' => $validatedData['ticket_id'], // Custom note here | Store the ticket_id here
             ];
             
-            $createdOrder = $shopify->Order->post($orderData); //create order for newly added product
-
+            $createdDraftOrder = $shopify->DraftOrder->post($orderData); //create order for newly added product
+            $payNowLink = $createdDraftOrder['invoice_url']; // This is your "Pay Now" link
+            $base_url = '127.0.0.1/storage/';
+            $imagePath = str_replace($base_url, '', $imageUrl); 
 
             // Start a database transaction
             DB::beginTransaction();
@@ -445,8 +448,10 @@ class ticketController extends Controller
             // Add product details to the email data
             $data = array_merge($validatedData, [
                 'product_url' => $productUrl,
-                'image_url' => $imageUrl,
+                'image_url' => $imagePath,
+                // 'image_url' => $imageUrl,
                 'products' => $products,
+                'payNowLink' => $payNowLink
             ]);  
 
             Mail::to($customerEmail)->send(new sendMail($data));
@@ -585,6 +590,7 @@ class ticketController extends Controller
                 'requestShippingEstimateFile' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
                 'customer_fname' => 'required|string|max:255', 
                 'customer_id' => 'required|string|max:255',
+                'email_type' => 'string|max:255',
 
             ]);
 
@@ -638,6 +644,9 @@ class ticketController extends Controller
             // Create the product
             $createdProduct = $shopify->Product->post($productData);
 
+            // Generate the product URL
+            $productUrl = 'https://californila-v2.myshopify.com/products/' . $createdProduct['handle'];
+
             $collectionId = '302621229228'; //collection ID for "Initial Payment Request"
 
             // Associate the product with the collection
@@ -663,7 +672,10 @@ class ticketController extends Controller
                 'note' => $validatedData['ticket_id'], // Custom note here | Store the ticket_id here
             ];
             
-            $createdOrder = $shopify->Order->post($orderData); //create order for newly added product 
+            $createdDraftOrder = $shopify->DraftOrder->post($orderData); //create order for newly added product
+            $payNowLink = $createdDraftOrder['invoice_url']; // This is your "Pay Now" link
+            $base_url = '127.0.0.1/storage/';
+            $imagePath = str_replace($base_url, '', $imageUrl); 
 
             // Start a database transaction
             DB::beginTransaction();
@@ -684,6 +696,28 @@ class ticketController extends Controller
 
             // Commit the transaction
             DB::commit();
+
+            // After saving the validatedData to database, send the mail
+            $getCustomerIdFromTicket = Ticket::where('ticket_id', $validatedData['ticket_id'])->get(); // Get Customer ID form Ticket
+            $getCustomer = Customer::where('id', $getCustomerIdFromTicket->first()->customer_id)->get(); // Replace with the customer's email address  
+            $customerEmail = $getCustomer->first()->email;
+
+            // Check if a ticket with the given customer_id already exists
+            $existing_ticket = Ticket::with(['DeclaredProducts'])->where('ticket_id', $validatedData['ticket_id'])->first();
+
+            // Retrieve all products associated with the specific ticket
+            $products = $existing_ticket ? $existing_ticket->DeclaredProducts : collect(); // Use collect() to handle empty case
+
+            // Add product details to the email data
+            $data = array_merge($validatedData, [
+                'product_url' => $productUrl,
+                'image_url' => $imagePath,
+                // 'image_url' => $imageUrl,
+                'products' => $products,
+                'payNowLink' => $payNowLink
+            ]);  
+
+            Mail::to($customerEmail)->send(new sendMail($data));
 
 
             return redirect()->back()->with('success', 'Product for shipping payment created successfully.');
