@@ -317,9 +317,10 @@
                 <div class="card-header py-1 flex items-center justify-between text-white uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <span class="text-md">List of Product(s)</span>    
                     <div x-data="{ open_add_product: false }">
-                        <button type="button" class="btn btn-warning my-1 mx-2" style="font-size:14px;"  @click="open_add_product = !open_add_product">
-                            Add Product
-                        </button>
+ 
+                            <button type="button" class="btn btn-warning my-1 mx-2" style="font-size:14px;"  @click="open_add_product = !open_add_product" <?php if($steps != '1') { echo 'disabled'; } ?>>
+                                Add Product
+                            </button> 
                     
                         {{-- START - ADD PRODUCT MODAL --}}
                         <div x-show="open_add_product" x-transition:enter="transition ease-out duration-300"
@@ -410,7 +411,7 @@
                                             <form method="POST" id="deleteForm_{{ $product->id }}" action="{{ route('deleteProducts', ['product_id', $product->id]) }}" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-danger btn-sm deleteButton" data-id="{{ $product->id }}">
+                                                <button type="button" class="btn btn-danger btn-sm deleteButton" data-id="{{ $product->id }}" <?php if($steps != '1') { echo 'disabled'; } ?> >
                                                     <span class="mdi mdi-delete-empty"></span>
                                                     Delete
                                                 </button>

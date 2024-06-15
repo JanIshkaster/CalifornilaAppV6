@@ -47,8 +47,7 @@ class sendMail extends Mailable
                 </div>';
 
                 // EMAIL INITIAL PAYMENT: STEP 1
-                case 'initialPayment':
-                    $imageCount = is_array($data['image_url']) ? count($data['image_url']) : 0;
+                case 'initialPayment': 
                     $productsHtml = '';
                     foreach ($data['products'] as $product) {
                         $productsHtml .= '<tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" style="border-bottom: 1px solid #e5e7eb;">
@@ -66,12 +65,9 @@ class sendMail extends Mailable
                     return '<div class="card-header">
                                     <h3>Hello ' . e($data['customer_fname']) . ', here is the requested payment for your ticket#: ' . e($data['ticket_id']) . '</h3> 
                                 </div>
-                                <div class="card-body" style="margin-bottom:20px;">
-                                    <div class="images_container" style="display: flex; align-items: center;">
-                                        <h4 style="margin:0;">Please see attached images:</h4> <span style="margin-left:10px;">' . $imageCount . ' image(s) attached</span>
-                                    </div> 
+                                <div class="card-body" style="margin-bottom:20px;"> 
                                     <div class="products_container" style="margin-top: 20px;">
-                                        <h4 style="margin: 0;">Products:</h4>
+                                        <h4 style="margin: 0;">Please checkout this generated order: ' . e($data['payNowLink']) .'</h4> 
                                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 mt-4" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                                                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400" style="background-color: #f9fafb;">
                                                     <tr>
@@ -84,6 +80,9 @@ class sendMail extends Mailable
                                             <tbody>' . $productsHtml . '</tbody>
                                         </table>
                                     </div>
+                                    <div class="desc_container" style="display: flex; align-items: center;">
+                                        <h4 style="margin:0;">Please see attached file for the invoice breakdown:</h4>  
+                                    </div> 
                                 </div>';
                 
 
@@ -101,6 +100,48 @@ class sendMail extends Mailable
                             <h4 style="margin:0;">Please see attached images:</h4> <span style="margin-left:10px;">' . $imageCount . ' image(s) attached</span>
                         </div> 
                     </div>'; 
+
+
+                // EMAIL SHIPPING PAYMENT: STEP 4
+                case 'shippingPayment': 
+                    $productsHtml = '';
+                    foreach ($data['products'] as $product) {
+                        $productsHtml .= '<tr class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" style="border-bottom: 1px solid #e5e7eb;">
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">' . e($product->product_name) . '</td>
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">' . e($product->product_qty) . '</td>
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">' . e($product->product_variant) . '</td>
+                                            <td class="px-6 py-4" style="padding: 8px 16px;">
+                                                <a href="' . e($product->product_link) . '" class="text-blue-600 no-underline bg-transparent" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none;">
+                                                    <span class="mdi mdi-link"></span> Link
+                                                </a>
+                                            </td>
+                                        </tr>';
+                    }
+                
+                    return '<div class="card-header">
+                                    <h3>Hello ' . e($data['customer_fname']) . ', here is the requested payment for your ticket#: ' . e($data['ticket_id']) . '</h3> 
+                                </div>
+                                <div class="card-body" style="margin-bottom:20px;"> 
+                                    <div class="products_container" style="margin-top: 20px;">
+                                        <h4 style="margin: 0;">Please checkout this generated order: ' . e($data['payNowLink']) .'</h4> 
+                                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 mt-4" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400" style="background-color: #f9fafb;">
+                                                    <tr>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Product</th>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Qty</th>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Variation</th>
+                                                        <th scope="col" class="px-6 py-3" style="padding: 8px 16px; text-align: left;">Link</th> 
+                                                    </tr>
+                                                </thead>
+                                            <tbody>' . $productsHtml . '</tbody>
+                                        </table>
+                                    </div>
+                                    <div class="desc_container" style="display: flex; align-items: center;">
+                                        <h4 style="margin:0;">Please see attached file for the invoice breakdown:</h4>  
+                                    </div> 
+                                </div>';
+                    
+
     
             default:
                 return '';
@@ -158,8 +199,9 @@ class sendMail extends Mailable
         $email->bcc('jan@ishkaster.com'); // Replace with the desired BCC address
 
         // FOR INITIAL PAYMENT: STEP 1
-        if ($this->data['email_type'] == 'initialPayment' && is_array($this->data['image_url'])) {
-            foreach ($this->data['image_url'] as $image) {
+        if ($this->data['email_type'] == 'initialPayment') {
+            $images = is_array($this->data['image_url']) ? $this->data['image_url'] : [$this->data['image_url']];
+            foreach ($images as $image) {
                 $path = public_path('storage/' . $image);
                 if (file_exists($path)) {
                     $email->attach($path); 
@@ -169,6 +211,7 @@ class sendMail extends Mailable
                 }
             }
         }
+
         
 
         //FOR MEDIA UPLOAD: STEP 3
@@ -183,6 +226,20 @@ class sendMail extends Mailable
                 }
             }
 
+        }
+
+        // FOR SHIPPING PAYMENT: STEP 4
+        if ($this->data['email_type'] == 'shippingPayment') {
+            $images = is_array($this->data['image_url']) ? $this->data['image_url'] : [$this->data['image_url']];
+            foreach ($images as $image) {
+                $path = public_path('storage/' . $image);
+                if (file_exists($path)) {
+                    $email->attach($path); 
+                } else {
+                    // Log an error message
+                    \Log::error("FOR SHIPPING PAYMENT: STEP 4: File does not exist at path: " . $path);
+                }
+            }
         }
 
         return $email;
