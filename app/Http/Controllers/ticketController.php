@@ -41,11 +41,10 @@ class ticketController extends Controller
             foreach ($groupedProducts as $shipping_method => $requestMethods) {
                 foreach ($requestMethods as $request_method => $products) {
                     // Find the ticket for the specific shipping method
-                    $customer_id = $customer->Ticket->where('shipping_method', $shipping_method)->first();   
-
-                    $ticket_id = $customer_id ? $customer_id->ticket_id : null;   
-                    $order_id = $customer_id ? $customer_id->order_id : null;  // Fetch order_id from the customer_id
-                    $status = $customer_id ? $customer_id->status : null;  // Fetch status from the ticket  
+                    $customerTicket = $customer->Ticket->where('shipping_method', $shipping_method)->first();    
+                    $ticket_id = $customerTicket ? $customerTicket->ticket_id : null;   
+                    $order_id = $customerTicket ? $customerTicket->order_id : null;  // Fetch order_id from the customerTicket
+                    $status = $customerTicket ? $customerTicket->status : null;  // Fetch status from the ticket  
 
                     $customer_tickets[] = [
                         'customer' => $customer,
@@ -311,10 +310,10 @@ class ticketController extends Controller
                 'customer_id' => 'required|string|max:255',
                 'ticket_id' => 'required|string|max:255',
                 'steps' => 'required|integer|min:1',
-                'totalCreditCardFee' => 'required',
-                'totalHandlingFee' => 'required',
-                'totalCustomTax' => 'required',
-                'totalConvenienceFee' => 'required',
+                'totalCreditCardFee' => 'nullable',
+                'totalHandlingFee' => 'nullable',
+                'totalCustomTax' => 'nullable',
+                'totalConvenienceFee' => 'nullable',
                 'productTotalValue' => 'required',
                 'productValue' => 'required',
                 'product_qty' => 'nullable|integer|min:1',
@@ -763,7 +762,7 @@ class ticketController extends Controller
             WebhookData::create([
                 'customer_id' => $customerId,
                 'ticket_id' => $note,
-                'order_id' => $shopify_order_id,
+                'shopify_order_id' => $shopify_order_id,
                 'payment_type' => $paymentType,
                 'shopify_product_id' => $shopify_product_id,
                 'data' => json_encode($data),
@@ -781,7 +780,7 @@ class ticketController extends Controller
             DB::rollBack();
     
             // Log the exception
-            Log::error('Error saving webhook data:', ['exception' => $e]);
+            Log::error('Error saving webhook data: ' . $e->getMessage(), ['exception' => $e]); 
     
             // Respond with a failure status (4XX or 5XX) to acknowledge the error
             return response()->json(['success' => false, 'message' => 'Error processing webhook'], 500);
@@ -812,6 +811,8 @@ class ticketController extends Controller
                 'ticket_id' => 'required|string|max:255', 
                 'tracking_code' => 'string|max:300', 
                 'tracking_link' => 'string|max:300',  
+                'customer_fname' => 'required|string|max:255', 
+                'email_type' => 'string|max:255',
             ]);    
 
             // Start a database transaction
@@ -831,6 +832,15 @@ class ticketController extends Controller
 
             // Commit the transaction
             DB::commit(); 
+
+            // After saving the validatedData to database, send the mail
+            $getCustomerIdFromTicket = Ticket::where('ticket_id', $validatedData['ticket_id'])->get(); // Get Customer ID form Ticket
+            $getCustomer = Customer::where('id', $getCustomerIdFromTicket->first()->customer_id)->get(); // Replace with the customer's email address  
+            $customerEmail = $getCustomer->first()->email;
+
+            $data = $validatedData;
+
+            Mail::to($customerEmail)->send(new sendMail($data));
 
             return redirect()->back()->with('success', 'Tracking code successfully.');
 
@@ -857,5 +867,42 @@ class ticketController extends Controller
         return redirect()->back()->with('success', 'Ticket updated successfully.');
     }
 
+
+    // STEP 7: CLOSING TICKET
+    public function closeTicket(Request $request){  
+
+        // Validate the request
+        $data = $request->validate([ 
+            'ticket_id' => 'required|string|max:255', 
+            'customer_fname' => 'required|string|max:255', 
+            'customer_id' => 'required|string|max:255',
+            'email_type' => 'string|max:255',
+
+        ]);
+
+        // Save the image path to the database
+        $ticketClose = Ticket::where('ticket_id', $data['ticket_id'])->first();
+        $ticketClose->status = 'closeTicket'; //UPDATE STATUS
+        $ticketClose->steps = 8; //UPDATE STEP
+        $ticketClose->save();
+
+        // After saving the data to database, send the mail
+        $getCustomerIdFromTicket = Ticket::where('ticket_id', $data['ticket_id'])->get(); // Get Customer ID form Ticket
+        $getCustomer = Customer::where('id', $getCustomerIdFromTicket->first()->customer_id)->get(); // Replace with the customer's email address  
+        $customerEmail = $getCustomer->first()->email;
+
+        Mail::to($customerEmail)->send(new sendMail($data));
+    
+        return to_route('solvedTicketsView')->with('success', 'Ticket updated successfully.'); 
+
+    }
+
+
+    // SOLVED TICKETS VIEW
+    public function solvedTicketsView(){
+
+        $solvedTickets = Ticket::with(['DeclaredProducts', 'customer'])->where('status', 'closeTicket')->get();  
+        return view('tickets.solved-tickets', ['solvedTickets' => $solvedTickets]);
+    }
     
 }

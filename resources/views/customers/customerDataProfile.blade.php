@@ -24,21 +24,34 @@
                                 <h6 class="card-subtitle font-normal text-gray-700 dark:text-gray-400 py-2">
                                     <a href="tel:{{ $customerDataProfile['phone'] ?? '' }}">{{ $customerDataProfile['phone'] ?? '' }}
                                     </a>
-                                </h6>
-
+                                </h6> 
                                 <div class="col-12 mt-2">
-                                    @if (is_array($customerDataProfile['addresses']) && count($customerDataProfile['addresses']) > 0)
-                                        @php
-                                            $row = $customerDataProfile['addresses'][0];
-                                        @endphp
+                                    @if ( $customerAddress && $customerAddress->first()) 
                                         <div class="card">
-                                            <div class="card-body">
-                                                <p class="card-text font-normal text-gray-700 dark:text-gray-400">Address
-                                                    :{{ $row['address1'] }}
-                                                    {{ $row['address2'] }}
-                                                    {{ $row['city'] }}
-                                                    {{ $row['province'] }}
-                                                    {{ $row['country'] }}</p>
+                                            <div class="card-body rounded-lg dark:bg-gray-800 ">
+                                                <div class="customer-address">
+                                                    <p class="mb-2 text-md text-gray-400 d-flex justify-evenly" >
+                                                        Contact: <span class="text-white" > {{ $customerAddress->contact }} </span> 
+                                                    </p>
+                                                    <p class="mb-2 text-md text-gray-400 d-flex justify-evenly" >
+                                                        Birthdate: <span class="text-white" > {{ date('F d, Y', strtotime($customerAddress->birthdate)) }} </span> 
+                                                    </p>
+                                                    <p class="mb-2 text-md text-gray-400 d-flex justify-evenly" >
+                                                        Address: 
+                                                        <span class="text-white" > 
+                                                            {{ $customerAddress->street }}, {{ $customerAddress->barangay }}, {{ $customerAddress->city }} 
+                                                        </span> 
+                                                    </p>
+                                                    <p class="mb-2 text-md text-gray-400 d-flex justify-evenly" >
+                                                        Region: <span class="text-white" > {{ $customerAddress->region }} </span> 
+                                                    </p>
+                                                    <p class="mb-2 text-md text-gray-400 d-flex justify-evenly" >
+                                                        Provice: <span class="text-white" > {{ $customerAddress->province }} </span> 
+                                                    </p>
+                                                    <p class="mb-2 text-md text-gray-400 d-flex justify-evenly" >
+                                                        Zipcode: <span class="text-white" > {{ $customerAddress->zipcode }} </span> 
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     @endif

@@ -33,8 +33,10 @@
                                 class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <td class="px-6 py-4 hidden">#{{ $index + 1 }}</td> <!-- Display Order ID as row number -->
                                 <td class="px-6 py-4">#{{ $customer_ticket['customer_shopify_id'] ?? '' }}</td>
-                                <td class="px-6 py-4">{{ $customer_ticket['customer']->first_name ?? '' }}
-                                    {{ $customer_ticket['customer']->last_name ?? '' }}</td>
+                                <td class="px-6 py-4">
+                                    {{ $customer_ticket['customer']->first_name ?? '' }}
+                                    {{ $customer_ticket['customer']->last_name ?? '' }}
+                                </td>
                                 <td class="px-6 py-4">{{ $customer_ticket['customer']->email ?? '' }}</td>
                                 <td class="px-6 py-4">
                                     <ul>
@@ -43,8 +45,7 @@
 
                                                 <a href="{{ $product->product_link }}" target="_blank"
                                                     class="d-block px-2 py-1 transition-all hover:bg-red-50 hover:text-gray-900 hover:bg-gray-900">
-                                                    <i class="mdi mdi-open-in-new"></i>
-                                                    #{{ $product->id ?? '' }}
+                                                    <i class="mdi mdi-open-in-new"></i> 
                                                     {{ $product->product_name ?? '' }}
                                                 </a>
                                             </li>
@@ -82,105 +83,132 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">  
-                                    @if ($customer_ticket['ticket_id'] && ($customer_ticket['order_id'] == $index + 1))
-                                        <a class="btn btn-success w-full"
-                                            href="{{ route('view_ticket', ['customer_id' => $customer_ticket['customer']->id, 'ticket_id' => $customer_ticket['ticket_id']]) }}">
-                                            <span class="mdi mdi-ticket-account" aria-hidden="true"></span>
-                                            View Ticket
-                                        </a>
+                                    
+                                    @if($customer_ticket['ticket_id'] && ($customer_ticket['order_id'] == $index + 1) && $customer_ticket['status'] == 'closeTicket')
+                                        <a class="btn btn-danger h-full w-full" >
+                                            <span class="mdi mdi-close-thick"></span>
+                                            Ticket Closed
+                                        </a>  
+                                        
                                     @else
-                                        <form method="POST" id="assignTicketForm_{{ $loop->iteration }}"
-                                            action="{{ route('assign_ticket', ['customer_id' => $customer_ticket['customer']->id, 'ticket_id' => 'assign_ticket_number']) }}"
-                                            style="display:inline;">
-                                            @csrf
+                                        @if ($customer_ticket['ticket_id'] && ($customer_ticket['order_id'] == $index + 1))
+                                            <a class="btn btn-success w-full"
+                                                href="{{ route('view_ticket', ['customer_id' => $customer_ticket['customer']->id, 'ticket_id' => $customer_ticket['ticket_id']]) }}">
+                                                <span class="mdi mdi-ticket-account" aria-hidden="true"></span>
+                                                View Ticket
+                                            </a>
+                                        @else
+                                            <form method="POST" id="assignTicketForm_{{ $loop->iteration }}"
+                                                action="{{ route('assign_ticket', ['customer_id' => $customer_ticket['customer']->id, 'ticket_id' => 'assign_ticket_number']) }}"
+                                                style="display:inline;">
+                                                @csrf
 
-                                            <input type="hidden" name="shipping_method" value="{{ $customer_ticket['shipping_method'] }}">
-                                            <input type="hidden" name="request_method" value="{{ $r_method }}">
-                                            <input type="hidden" name="order_id" value="{{ $index + 1 }}">
-                                            <input type="hidden" name="customer_name" value="{{ $customer_ticket['customer']->first_name }}">
+                                                <input type="hidden" name="shipping_method" value="{{ $customer_ticket['shipping_method'] }}">
+                                                <input type="hidden" name="request_method" value="{{ $r_method }}">
+                                                <input type="hidden" name="order_id" value="{{ $index + 1 }}">
+                                                <input type="hidden" name="customer_name" value="{{ $customer_ticket['customer']->first_name }}">
 
-                                            {{-- Add hidden input fields for product IDs --}}
-                                            @foreach ($customer_ticket['products'] as $product)
-                                                <input type="hidden" name="product_ids[]" value="{{ $product->id }}">
-                                            @endforeach
+                                                {{-- Add hidden input fields for product IDs --}}
+                                                @foreach ($customer_ticket['products'] as $product)
+                                                    <input type="hidden" name="product_ids[]" value="{{ $product->id }}">
+                                                @endforeach
 
-                                            <button type="button" class="btn btn-primary w-full btn-sm assignTicket"
-                                                data-id="{{ $loop->iteration }}"
-                                                data-name="{{ $customer_ticket['customer']->first_name ?? '' }} {{ $customer_ticket['customer']->last_name ?? '' }}">
-                                                <span class="mdi mdi-delete-empty"></span>
-                                                Assign Ticket
-                                            </button>
-                                        </form>
+                                                <button type="button" class="btn btn-primary w-full btn-sm assignTicket"
+                                                    data-id="{{ $loop->iteration }}"
+                                                    data-name="{{ $customer_ticket['customer']->first_name ?? '' }} {{ $customer_ticket['customer']->last_name ?? '' }}">
+                                                    <span class="mdi mdi-delete-empty"></span>
+                                                    Assign Ticket
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <a class="btn btn-info w-full" href="/calculator">
+                                            <span class="mdi me-2 mdi-calculator" aria-hidden="true"></span>
+                                            Calculator
+                                        </a>
+                                        @if ($customer_ticket['status'] && ($customer_ticket['order_id'] == $index + 1))
+                                            @switch($customer_ticket['status'])
+                                                @case('forReview')
+                                                    <a class="btn btn-secondary w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        For Review
+                                                    </a>
+                                                    @break
+                                            
+                                                @case('pendingPayment')
+                                                    <a class="btn btn-danger w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        Pending Payment
+                                                    </a>
+                                                    @break
+
+                                                @case('pendingShippingPayment')
+                                                    <a class="btn btn-danger w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        Pending Shipping Payment
+                                                    </a>
+                                                    @break
+                                                    
+                                                @case('addingMedia')
+                                                    <a class="btn btn-light w-full">
+                                                        <span class="mdi mdi-image-outline"></span>
+                                                        Adding Media/Images
+                                                    </a>
+                                                    @break
+
+                                                @case('initialPaymentPaid')
+                                                    <a class="btn btn-warning w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        Initial Payment Paid
+                                                    </a>
+                                                    @break
+
+                                                @case('shippingPayment')
+                                                    <a class="btn btn-secondary w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        Shipping Review
+                                                    </a>
+                                                    @break
+
+                                                @case('shippingPaymentPaid')
+                                                    <a class="btn btn-dark w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        Shipping Payment Paid
+                                                    </a>
+                                                    @break
+
+                                                @case('addingTracking')
+                                                    <a class="btn btn-secondary w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        For Adding Tracking Code
+                                                    </a>
+                                                    @break
+
+
+
+                                                @case('trackingCodeAdded')
+                                                    <a class="btn btn-success w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        Tracking Code Added
+                                                    </a>
+                                                    @break
+
+                                                @case('confirmClosingTicket')
+                                                    <a class="btn btn-danger w-full">
+                                                        <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
+                                                        Confirm Closing Ticket
+                                                    </a>
+                                                    @break
+
+                                                    
+                                            
+                                                @default
+                                                    {{-- Handle default case if needed --}}
+                                            @endswitch 
+                                        @endif
                                     @endif
 
-                                    <a class="btn btn-info w-full" href="/calculator">
-                                        <span class="mdi me-2 mdi-calculator" aria-hidden="true"></span>
-                                        Calculator
-                                    </a>
-                                    @if ($customer_ticket['status'] && ($customer_ticket['order_id'] == $index + 1))
-                                        @switch($customer_ticket['status'])
-                                            @case('forReview')
-                                                <a class="btn btn-secondary w-full" href="">
-                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                    For Review
-                                                </a>
-                                                @break
-                                        
-                                            @case('pendingPayment')
-                                                <a class="btn btn-danger w-full" href="">
-                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                    Pending Payment
-                                                </a>
-                                                @break
 
-                                            @case('pendingShippingPayment')
-                                                <a class="btn btn-danger w-full" href="">
-                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                    Pending Shipping Payment
-                                                </a>
-                                                @break
-                                                
-                                            @case('addingMedia')
-                                                <a class="btn btn-light w-full" href="">
-                                                    <span class="mdi mdi-image-outline"></span>
-                                                    Adding Media/Images
-                                                </a>
-                                                @break
-
-                                            @case('initialPaymentPaid')
-                                                <a class="btn btn-warning w-full" href="">
-                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                    Initial Payment Paid
-                                                </a>
-                                                @break
-
-                                            @case('shippingPaymentPaid')
-                                                <a class="btn btn-dark w-full" href="">
-                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                    Shipping Payment Paid
-                                                </a>
-                                                @break
-
-                                            @case('trackingCodeAdded')
-                                                <a class="btn btn-success w-full" href="">
-                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                    Tracking Code Added
-                                                </a>
-                                                @break
-
-                                            @case('confirmClosingTicket')
-                                                <a class="btn btn-danger w-full" href="">
-                                                    <span class="mdi me-2 mdi-note" aria-hidden="true"></span>
-                                                    Confirm Closing Ticket
-                                                </a>
-                                                @break
-
-                                                
-                                        
-                                            @default
-                                                {{-- Handle default case if needed --}}
-                                        @endswitch 
-                                    @endif
 
                                 
 

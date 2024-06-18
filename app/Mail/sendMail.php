@@ -140,7 +140,36 @@ class sendMail extends Mailable
                                         <h4 style="margin:0;">Please see attached file for the invoice breakdown:</h4>  
                                     </div> 
                                 </div>';
-                    
+
+
+                // EMAIL ADDING TRACKING CODE: STEP 6
+                case 'trackingCode': 
+                    return '<div class="card-header">
+                    <h3>Hello ' . e($data['customer_fname']) . ', Tracking code added to your ticket#: ' . e($data['ticket_id']) . '</h3> 
+                    </div>
+                    <div class="card-body" style="margin-bottom:20px;">
+                        <div class="container" style="display: flex; align-items: center;">
+                            <h4 style="margin:0;">Tracking Code:</h4> <span style="margin-left:10px;">' . e($data['tracking_code']) . '</span>
+                        </div> 
+                        <div class="container" style="display: flex; align-items: center;">
+                            <h4 style="margin:0;">Tracking Link:</h4> <span style="margin-left:10px;">' . e($data['tracking_link']) . '</span>
+                        </div> 
+                    </div>'; 
+
+
+                // EMAIL CLOSING TICKET: STEP 7
+                case 'closeTicket': 
+                    return '<div class="card-header">
+                    <h3>Hello ' . e($data['customer_fname']) . ',</h3> 
+                    </div>
+                    <div class="card-body" style="margin-bottom:20px;">
+                        <div class="container" style="display: flex; align-items: center;">
+                            <h4 style="margin:0;">
+                                Thank you for being our valued customer. We are pleased to inform you that your product/items are on the way to you. 
+                                We hope our services will meet your expectations. Rest assured, we are here to support you every step of the way. Let us know if you have any questions.
+                            </h4> 
+                        </div> 
+                    </div>'; 
 
     
             default:
@@ -158,19 +187,25 @@ class sendMail extends Mailable
         $subject = '';
         switch ($this->data['email_type']) {
             case 'emailNote':
-                $subject = 'New notes added to your ticket ' . e($this->data['ticket_id']);
+                $subject = 'New notes added to your ticket#: ' . e($this->data['ticket_id']);
                 break;
             case 'emailFee':
-                $subject = 'Additional fees added to your ticket ' . e($this->data['ticket_id']);
+                $subject = 'Additional fees added to your ticket#: ' . e($this->data['ticket_id']);
                 break;
             case 'emailMediaComment':
-                $subject = 'New comment added to your ticket ' . e($this->data['ticket_id']);
+                $subject = 'New comment added to your ticket#: ' . e($this->data['ticket_id']);
                 break;
             case 'initialPayment':
-                $subject = 'Initial Payment Request for your ticket ' . e($this->data['ticket_id']);
+                $subject = 'Initial Payment Request for your ticket#: ' . e($this->data['ticket_id']);
+                break;
+            case 'trackingCode':
+                $subject = 'Tracking code added to your ticket#: ' . e($this->data['ticket_id']);
+                break;
+            case 'closeTicket':
+                $subject = 'Your Order is on its way! ticket#: ' . e($this->data['ticket_id']);
                 break;
             default:
-                $subject = 'Update on your ticket ' . e($this->data['ticket_id']);
+                $subject = 'Update on your ticket#: ' . e($this->data['ticket_id']);
                 break;
         }
     
