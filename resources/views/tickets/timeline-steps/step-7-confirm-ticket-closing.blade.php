@@ -1,6 +1,6 @@
 <fieldset id="step-7" role="tabpanel" aria-labelledby="steps-uid-0-h-7" class="body" aria-hidden="true"> 
     <form method="POST" id="declaredProductEstimateForm" enctype="multipart/form-data"
-            action="{{ route('initialPayment', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}">
+            action="{{ route('closeTicket', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}">
         @csrf
     
         <p class="desc mb-4">Mark this package a pending to home</p>
@@ -40,6 +40,12 @@
             <input type="checkbox" name="confirm_closing_ticket" id="confirm_closing_ticket" class="text-xs p-0 mx-2" required>
             <label class="form-check-label text-white" for="confirm_closing_ticket">After submit, customer will receive notification that their package is pending to their home.</label>
         </div>
+
+        <input type="hidden" value="{{ $ticket_id }}" name="ticket_id" class="ticket_id"> 
+        <input type="hidden" value="{{ $customer_id }}" name="customer_id" class="customer_id"> 
+        <input type="hidden" value="{{ $customer_fname }}" name="customer_fname" class="customer_fname"> 
+        <input type="hidden" name="email_type" value="closeTicket" />
+
         <button type="submit" id="submit_button" class="btn btn-primary confirmClosingTicket w-full m-0" disabled>Confirm</button>
         
 

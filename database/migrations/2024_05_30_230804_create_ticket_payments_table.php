@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('ticket_id', 50);
             $table->string('shopify_product_ip_id', 50);
-            $table->decimal('total_handling_fee', 8, 2);
-            $table->decimal('total_custom_tax', 8, 2);
-            $table->decimal('total_convenience_fee', 8, 2);
-            $table->decimal('total_credit_card_fee', 8, 2);
-            $table->decimal('total_product_value', 8, 2);
-            $table->decimal('total_product_price', 8, 2);
+            $table->decimal('total_handling_fee', 8, 2)->nullable();
+            $table->decimal('total_custom_tax', 8, 2)->nullable();
+            $table->decimal('total_convenience_fee', 8, 2)->nullable();
+            $table->decimal('total_credit_card_fee', 8, 2)->nullable();
+            $table->decimal('total_product_value', 8, 2)->nullable();
+            $table->decimal('total_product_price', 8, 2)->nullable();
             $table->string('payment_type', 100)->nullable();
             $table->string('image_path')->nullable();
             $table->timestamps();

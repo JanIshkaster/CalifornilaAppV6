@@ -85,6 +85,7 @@
                     <input type="hidden" value="{{ $customer_id }}" name="customer_id" class="customer_id"> 
                     <input type="hidden" value="{{ $customer_fname }}" name="customer_fname" class="customer_fname">  
                     <input type="hidden" value="{{ $status }}" name="status" class="status">   
+                    <input type="hidden" name="email_type" value="trackingCode" />
     
                     <button type="submit" class="btn btn-primary addTrackingCode w-full m-0"  disabled>Submit Tracking</button> 
     

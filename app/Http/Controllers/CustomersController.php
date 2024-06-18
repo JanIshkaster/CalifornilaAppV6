@@ -26,10 +26,12 @@ class CustomersController extends Controller
     public function openCustomersDataProfile($id){ 
         $customerDataProfile = Customer::find($id);  
         $customerAddedProductData = CustomerAddedProduct::where('customer_id', $id)->get(); 
+        $customerAddress = CustomerAddress::where('customer_id', $id)->first(); 
         return view('customers.customerDataProfile', 
         [
             'customerDataProfile' => $customerDataProfile,
-            'customerAddedProductData' => $customerAddedProductData
+            'customerAddedProductData' => $customerAddedProductData,
+            'customerAddress' => $customerAddress
         ]);
     }
 

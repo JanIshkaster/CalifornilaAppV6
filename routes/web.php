@@ -77,7 +77,11 @@ Route::middleware('auth')->group(function () {
 
     // STEP 7: On the way to customer step
     Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/step_7', [ticketController::class, 'step_7'])->name('step_7'); //proceed to step 7
-        
+    Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/close_ticket', [ticketController::class, 'closeTicket'])->name('closeTicket'); // CLOSING TICKET
+
+    //SOlVED TICKETS
+    Route::get('/solved-tickets', [ticketController::class, 'solvedTicketsView'])->name('solvedTicketsView'); //View solved tickets
+    
     //PRODUCTS PAGE
     Route::get('/orders', [OrdersController::class, 'getOrders'])->name('getOrders');
 
