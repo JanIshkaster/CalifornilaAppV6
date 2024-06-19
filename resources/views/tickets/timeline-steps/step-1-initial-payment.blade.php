@@ -3,6 +3,12 @@
             action="{{ route('initialPayment', ['customer_id' => $customer_id, 'ticket_id' => $ticket_id]) }}">
         @csrf
     
+
+        @php
+            $totalQuantity = collect(json_decode($products, true))->sum('product_qty');
+        @endphp 
+
+        
         <p class="desc">Add value to the request or declared </p>
 
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-4">
@@ -102,9 +108,7 @@
                         <input type="hidden" value="{{ $request_method }}" name="request_type" class="request_type">
                         <input type="hidden" value="{{ $status }}" name="status" class="status">
                         
-                        @php
-                            $totalQuantity = collect(json_decode($products, true))->sum('product_qty');
-                        @endphp 
+ 
 
                         <input type="hidden" value="{{ $totalQuantity ?? '' }}" name="product_qty" class="product_qty">
                         <input type="hidden" value="{{ $admin_settings->handling_fee ?? '' }}" name="handling_fee" class="handling_fee">
@@ -299,7 +303,7 @@
                 totalCreditCardFee = 0;
             <?php endif; ?>
 
-            const productTotalValue = (productQty * productValue) + totalHandlingFee + totalCustomTax + totalConvenienceFee + totalCreditCardFee;
+            const productTotalValue = (productQty * productValue) + totalHandlingFee + totalCustomTax + totalConvenienceFee + totalCreditCardFee; 
 
             // PUT VALUES IN THE HIDDEN INPUT
             document.querySelector('.totalHandlingFee').value = totalHandlingFee; 

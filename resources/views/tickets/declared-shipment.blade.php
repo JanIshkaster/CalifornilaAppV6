@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="page-title-container max-w-full text-left px-3 mb-3">
-        <h1 class="text-2xl font-medium">Declared Products</h1>
+        <h1 class="text-2xl font-medium">Declared Shipment Products</h1>
     </div>
 
     <div class="container flex flex-row max-w-full">

@@ -67,10 +67,93 @@ class ticketController extends Controller
         });
 
         return view('tickets.ticket_index', ['customer_tickets' => $customer_tickets, 'customers' => $customers]);
+    
+
     }
     
     
+    //Ticket for Buying Assistance Page
+    public function buyingAsssitance()
+    {
+        $customers = Customer::with(['DeclaredProducts', 'Ticket'])->get();
+    
+        // Initialize an empty array to hold the customers and their tickets
+        $customer_tickets = [];
+    
+        foreach ($customers as $customer) {
+            // Group declared products by shipping_method only
+            $groupedProducts = $customer->DeclaredProducts->where('request_method', 'REQUEST_ESTIMATES')->groupBy('shipping_method');
+            
+            foreach ($groupedProducts as $shipping_method => $products) {
+                // Find the ticket for the specific shipping method
+                $customerTicket = $customer->Ticket->where('shipping_method', $shipping_method)->first();
+                $ticket_id = $customerTicket ? $customerTicket->ticket_id : null;
+                $order_id = $customerTicket ? $customerTicket->order_id : null;
+                $status = $customerTicket ? $customerTicket->status : null;
+    
+                $customer_tickets[] = [
+                    'customer' => $customer,
+                    'customer_shopify_id' => $customer->customer_id,
+                    'ticket_id' => $ticket_id,
+                    'products' => $products,
+                    'shipping_method' => $shipping_method,
+                    'request_method' => 'REQUEST_ESTIMATES',
+                    'order_id' => $order_id,
+                    'status' => $status,
+                    'created_at' => $products->min('created_at') // Get the earliest creation date for sorting
+                ];
+            }
+        }
+    
+        // Sort the customer tickets by the created_at field
+        usort($customer_tickets, function ($a, $b) {
+            return $a['created_at'] <=> $b['created_at'];
+        });
+    
+        return view('tickets.buying-assistance', ['customer_tickets' => $customer_tickets, 'customers' => $customers]);
+    }
+    
 
+    
+    //Ticket for Buying Assistance Page
+    public function declaredShipment() { 
+            $customers = Customer::with(['DeclaredProducts', 'Ticket'])->get();
+        
+            // Initialize an empty array to hold the customers and their tickets
+            $customer_tickets = [];
+        
+            foreach ($customers as $customer) {
+                // Group declared products by shipping_method only
+                $groupedProducts = $customer->DeclaredProducts->where('request_method', 'DECLARE_SHIPMENTS')->groupBy('shipping_method');
+                
+                foreach ($groupedProducts as $shipping_method => $products) {
+                    // Find the ticket for the specific shipping method
+                    $customerTicket = $customer->Ticket->where('shipping_method', $shipping_method)->first();
+                    $ticket_id = $customerTicket ? $customerTicket->ticket_id : null;
+                    $order_id = $customerTicket ? $customerTicket->order_id : null;
+                    $status = $customerTicket ? $customerTicket->status : null;
+        
+                    $customer_tickets[] = [
+                        'customer' => $customer,
+                        'customer_shopify_id' => $customer->customer_id,
+                        'ticket_id' => $ticket_id,
+                        'products' => $products,
+                        'shipping_method' => $shipping_method,
+                        'request_method' => 'DECLARE_SHIPMENTS',
+                        'order_id' => $order_id,
+                        'status' => $status,
+                        'created_at' => $products->min('created_at') // Get the earliest creation date for sorting
+                    ];
+                }
+            }
+        
+            // Sort the customer tickets by the created_at field
+            usort($customer_tickets, function ($a, $b) {
+                return $a['created_at'] <=> $b['created_at'];
+            });
+        
+            return view('tickets.declared-shipment', ['customer_tickets' => $customer_tickets, 'customers' => $customers]); 
+    }
     
      
 
