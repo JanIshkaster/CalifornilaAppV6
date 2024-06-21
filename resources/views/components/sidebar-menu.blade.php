@@ -63,7 +63,50 @@
                             <span class="mx-2 text-sm font-medium">Orders</span>
                         </a>
 
-                        <a class="{{ (Route::currentRouteName() == 'ticket_index') ? 'active' : '' }} flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700"
+                        <div class="relative " x-data="{ open: false }">
+                            <button type="button" @click="open = !open" id="dropdown-toggle" class="w-full flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" aria-controls="dropdown-example" aria-expanded="false">
+                                <span class="mdi mdi-ticket-confirmation"></span>
+                                <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Tickets</span>
+                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                    <!-- Your SVG icon code here -->
+                                </svg>
+                            </button>
+                            <ul id="dropdown-example" x-show="open || '{{ (Route::currentRouteName() == 'ticket_index') ? 'true' : 'false' }}'" @click.away="open = false" class="relative z-10 py-2 space-y-2 ml-10 dark:bg-gray-800 dark:border-gray-700 rounded-lg shadow-lg">
+                                <li>
+                                    <a class="{{ (Route::currentRouteName() == 'ticket_index') ? 'active' : '' }} flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" 
+                                    href="{{  route('ticket_index') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 019 9v.375M10.125 2.25A3.375 3.375 0 0113.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 013.375 3.375M9 15l2.25 2.25L15 12" />
+                                    </svg>
+        
+                                    <span class="mx-2 text-sm font-medium">Assign Ticket</span>
+                                </a> 
+                                </li>
+                                <li>
+                                    <a href="{{  route('buyingAsssitance')  }}" class="{{ (Route::currentRouteName() == 'buyingAsssitance') ? 'active' : '' }} block w-full p-2 px-3 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                                        <span class="mdi mdi-ticket-confirmation-outline"></span>
+                                        <span class="mx-2 text-sm font-medium">Buying Assistance Tickets</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{  route('declaredShipment')  }}" class="{{ (Route::currentRouteName() == 'declaredShipment') ? 'active' : '' }} block w-full p-2 px-3 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                                        <span class="mdi mdi-ticket-confirmation-outline"></span>
+                                        <span class="mx-2 text-sm font-medium">Declared Shipment Tickets</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{  route('solvedTicketsView')  }}" class="{{ (Route::currentRouteName() == 'solvedTicketsView') ? 'active' : '' }} block w-full p-2 px-3 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                                        <span class="mdi mdi-ticket-confirmation-outline"></span>
+                                        <span class="mx-2 text-sm font-medium">Solved Tickets</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+
+                        {{-- <a class="{{ (Route::currentRouteName() == 'ticket_index') ? 'active' : '' }} flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700"
                             href="{{  route('ticket_index')  }}">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -83,7 +126,7 @@
                             </svg>
 
                             <span class="mx-2 text-sm font-medium">Solved Ticket</span>
-                        </a>
+                        </a> --}}
 
                         <a class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700"
                             href="/calculator">

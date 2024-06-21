@@ -51,6 +51,8 @@ Route::middleware('auth')->group(function () {
 
     //TICKETS PAGE
     Route::get('/ticket', [ticketController::class, 'ticket_index'])->name('ticket_index'); // TICKET PAGE -> REGISTERED PRODUCT DISPLAY
+    Route::get('/ticket/buying-assistance', [ticketController::class, 'buyingAsssitance'])->name('buyingAsssitance'); // TICKET - BUYING ASSISTANCE PAGE 
+    Route::get('/ticket/declared-shipment', [ticketController::class, 'declaredShipment'])->name('declaredShipment'); // TICKET - DECLARED SHIPMENT PAGE 
     Route::post('/ticket/assign-ticket/{customer_id}/{ticket_id}/assign-ticket', [ticketController::class, 'assign_ticket'])->name('assign_ticket'); // ASSIGN TICKET PAGE
     Route::get('/ticket/view-ticket/{customer_id}/{ticket_id}/', [ticketController::class, 'view_ticket'])->name('view_ticket'); // OPEN TICKET PAGE
     Route::post('/ticket/view-ticket/{customer_id}/{ticket_id}/store_ticket_note', [ticketNoteController::class, 'store_ticket_note'])->name('store_ticket_note'); // STORE TICKET NOTE
