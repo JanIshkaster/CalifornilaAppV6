@@ -29,6 +29,49 @@ use App\Mail\sendMail;
 class ticketController extends Controller
 {
     //Ticket Page
+    // public function ticket_index() {
+    //     $customers = Customer::with(['DeclaredProducts', 'Ticket'])->get();  
+    
+    //     // Initialize an empty array to hold the customers and their tickets
+    //     $customer_tickets = [];
+        
+    //     foreach ($customers as $customer) {
+    //         // Group declared products by both shipping_method and request_method
+    //         $groupedProducts = $customer->DeclaredProducts->groupBy(['shipping_method', 'request_method']);
+    //         foreach ($groupedProducts as $shipping_method => $requestMethods) {
+    //             foreach ($requestMethods as $request_method => $products) {
+    //                 // Find the ticket for the specific shipping method
+    //                 $customerTicket = $customer->Ticket->where('shipping_method', $shipping_method)->first();    
+    //                 $ticket_id = $customerTicket ? $customerTicket->ticket_id : null;   
+    //                 $order_id = $customerTicket ? $customerTicket->order_id : null;  // Fetch order_id from the customerTicket
+    //                 $status = $customerTicket ? $customerTicket->status : null;  // Fetch status from the ticket  
+
+    //                 $customer_tickets[] = [
+    //                     'customer' => $customer,
+    //                     'customer_shopify_id' => $customer->customer_id,
+    //                     'ticket_id' => $ticket_id,  
+    //                     'products' => $products,
+    //                     'shipping_method' => $shipping_method,
+    //                     'request_method' => $request_method,
+    //                     'order_id' => $order_id,
+    //                     'status' => $status,
+    //                     'created_at' => $products->min('created_at') // Get the earliest creation date for sorting
+    //                 ];
+    //             }
+    //         }
+    //     } 
+        
+    //     // Sort the customer tickets by the created_at field
+    //     usort($customer_tickets, function($a, $b) {
+    //         return $a['created_at'] <=> $b['created_at'];
+    //     });
+
+    //     return view('tickets.ticket_index', ['customer_tickets' => $customer_tickets, 'customers' => $customers]);
+    
+
+    // }
+
+
     public function ticket_index() {
         $customers = Customer::with(['DeclaredProducts', 'Ticket'])->get();  
     
@@ -37,15 +80,19 @@ class ticketController extends Controller
         
         foreach ($customers as $customer) {
             // Group declared products by both shipping_method and request_method
-            $groupedProducts = $customer->DeclaredProducts->groupBy(['shipping_method', 'request_method']);
+            $groupedProducts = $customer->DeclaredProducts->groupBy(['shipping_method', 'request_method']); 
             foreach ($groupedProducts as $shipping_method => $requestMethods) {
                 foreach ($requestMethods as $request_method => $products) {
-                    // Find the ticket for the specific shipping method
-                    $customerTicket = $customer->Ticket->where('shipping_method', $shipping_method)->first();    
+                    // Find the ticket for the specific shipping method and request method
+                    $customerTicket = $customer->Ticket
+                        ->where('shipping_method', $shipping_method)
+                        ->where('request_method', $request_method)
+                        ->first();   
+                    
                     $ticket_id = $customerTicket ? $customerTicket->ticket_id : null;   
                     $order_id = $customerTicket ? $customerTicket->order_id : null;  // Fetch order_id from the customerTicket
                     $status = $customerTicket ? $customerTicket->status : null;  // Fetch status from the ticket  
-
+    
                     $customer_tickets[] = [
                         'customer' => $customer,
                         'customer_shopify_id' => $customer->customer_id,
@@ -60,16 +107,18 @@ class ticketController extends Controller
                 }
             }
         } 
+     
         
         // Sort the customer tickets by the created_at field
         usort($customer_tickets, function($a, $b) {
             return $a['created_at'] <=> $b['created_at'];
         });
-
-        return view('tickets.ticket_index', ['customer_tickets' => $customer_tickets, 'customers' => $customers]);
     
-
+        return view('tickets.ticket_index', ['customer_tickets' => $customer_tickets, 'customers' => $customers]); 
     }
+    
+    
+    
     
     
     //Ticket for Buying Assistance Page
