@@ -224,14 +224,18 @@ class sendMail extends Mailable
 
         $this->data['emailContent'] = $this->emailType($this->data);
 
-        $email = $this->from('janluigieflores@gmail.com', 'Californila App')
+        $email = $this->from('sales@californila.com', 'Californila App')
                       ->markdown('emails.sendMail');
 
         // Manually add CC
-        // $email->cc('cc@example.com'); // Replace with the desired CC address
+        $email->cc('faye.californila@gmail.com'); // Replace with the desired CC address
 
-        // Manually add BCC
+        // Manually add multiple BCCs
         $email->bcc('jan@ishkaster.com'); // Replace with the desired BCC address
+        $email->bcc('jennifer@californila.com'); // Another BCC address
+        $email->bcc('calvin@californila.com'); // Another BCC address
+        $email->bcc('joe@californila.com'); // Another BCC address
+        $email->bcc('faye@californila.com'); // Another BCC address
 
         // FOR INITIAL PAYMENT: STEP 1
         if ($this->data['email_type'] == 'initialPayment') {
